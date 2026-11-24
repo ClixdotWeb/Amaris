@@ -27,7 +27,8 @@ export default async function CheckoutPage() {
           email={USE_MOCK ? "" : (user.email ?? "")}
           savedAddresses={addresses}
           settings={{
-            domestic_shipping_fee: settings.domestic_shipping_fee,
+            shipping_kerala_per_item: settings.shipping_kerala_per_item,
+            shipping_india_per_item: settings.shipping_india_per_item,
             free_shipping_above: settings.free_shipping_above,
             international_rates: settings.international_rates,
           }}

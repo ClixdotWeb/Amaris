@@ -25,7 +25,8 @@ export async function saveSettings(form: FormData) {
     default_stitching_charge: rupeesToPaise(Number(form.get("default_stitching_charge") || 0)),
     // TODO: add a per-category UI if the client wants different charges per category
     stitching_charge_by_category: current.stitching_charge_by_category,
-    domestic_shipping_fee: rupeesToPaise(Number(form.get("domestic_shipping_fee") || 0)),
+    shipping_kerala_per_item: rupeesToPaise(Number(form.get("shipping_kerala_per_item") || 0)),
+    shipping_india_per_item: rupeesToPaise(Number(form.get("shipping_india_per_item") || 0)),
     free_shipping_above: free ? rupeesToPaise(Number(free)) : null,
     international_rates: parseRates(String(form.get("international_rates") ?? "")),
     cod_enabled: form.get("cod_enabled") === "on",

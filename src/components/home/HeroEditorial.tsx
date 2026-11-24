@@ -19,6 +19,8 @@ export type EditorialSlide = {
   posterPosition?: string;
   /** Optional portrait poster for phones (e.g. the uncropped tall photo) */
   posterMobile?: string;
+  /** Optional: portrait photos shown side by side on wide screens instead of the poster (phones use the poster) */
+  panels?: string[];
   video?: string;
   videoMobile?: string;
 };
@@ -41,7 +43,7 @@ type Phase = "check" | "intro" | "slides";
  * Full-screen editorial video slider.
  * Incoming slide reveals bottom-up (clip-path) while its media scales 1.15 → 1; headline words slide out/in
  * through masks; tagline/description/button fade up; the active dot fills over 5s and advances the slide.
- * Pauses on hover. Arrow keys + swipe. Reduced motion: crossfades only.
+ * Advances every SLIDE_MS without pausing. Arrow keys + swipe. Reduced motion: crossfades only.
  * Slides without a video file fall back to their poster image (with a slow zoom).
  */
 export function HeroEditorial({
@@ -61,7 +63,6 @@ export function HeroEditorial({
   const [i, setI] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [mobile, setMobile] = useState(false);
   const activationKey = useRef<Record<number, number>>({ 0: 0 });
   const introRef = useRef<HTMLVideoElement>(null);
@@ -125,12 +126,12 @@ export function HeroEditorial({
     [i, tick, slides.length],
   );
 
-  // Auto-advance. Restarts after every change (incl. arrows/swipe); holds while hovered.
+  // Auto-advance, always (also while the pointer rests on the hero). Restarts after every change (incl. arrows/swipe).
   useEffect(() => {
-    if (phase !== "slides" || paused || slides.length < 2) return;
+    if (phase !== "slides" || slides.length < 2) return;
     const t = window.setTimeout(() => go(i + 1), SLIDE_MS);
     return () => window.clearTimeout(t);
-  }, [phase, paused, i, tick, go, slides.length]);
+  }, [phase, i, tick, go, slides.length]);
 
   // Arrow keys while the hero is mostly on screen
   useEffect(() => {
@@ -171,8 +172,6 @@ export function HeroEditorial({
       aria-label="Featured collections"
       className="relative -mt-[73px] h-[100svh] min-h-[560px] overflow-hidden text-white lg:-mt-[89px]"
       style={{ backgroundColor: phase === "slides" ? "#140a0a" : INTRO_BG }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -248,7 +247,7 @@ export function HeroEditorial({
 
           {/* ── Copy ── */}
           {/* Right padding keeps the glass card clear of the floating WhatsApp button */}
-          <div className="absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-8 px-5 pb-24 md:px-10 md:pr-28 lg:pb-12">
+          <div className="absolute inset-x-0 bottom-0 z-40 flex items-end justify-between gap-8 px-5 pb-12 md:px-10 md:pr-28">
             {/* Bottom-left: one calm column, tagline → headline (one phrase) → description → button */}
             <div className="min-w-0">
               <FadeUp k={`t-${i}-${tick}`} delay={firstPaint ? 0.1 : 0.55} reduce={!!reduce}>
@@ -387,6 +386,30 @@ function SlideMedia({ slide, active, mobile }: { slide: EditorialSlide; active: 
         className="h-full w-full object-cover"
         style={{ objectPosition: slide.posterPosition ?? "50% 40%" }}
       />
+    );
+  }
+  // Wide screens: portrait product photos side by side (editorial triptych), each with the slow zoom
+  if (!mobile && slide.panels?.length) {
+    return (
+      <div className="relative h-full w-full">
+        <div className="grid h-full w-full gap-px bg-[#140a0a]" style={{ gridTemplateColumns: `repeat(${slide.panels.length}, 1fr)` }}>
+          {slide.panels.map((p, n) => (
+            <div key={p} className="overflow-hidden">
+              <img
+                src={p}
+                alt=""
+                className={`h-full w-full object-cover ${active ? "animate-settle motion-reduce:animate-none" : ""}`}
+                style={{ objectPosition: slide.posterPosition ?? "50% 30%", animationDelay: `${n * 120}ms` }}
+              />
+            </div>
+          ))}
+        </div>
+        {/* Bright shop photos: warm tint + soft shade behind the copy (bottom-left) for a moodier, legible hero */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[#2a1210]/25 bg-[radial-gradient(ellipse_at_0%_100%,rgba(20,10,10,0.55),transparent_60%)]"
+        />
+      </div>
     );
   }
   return (

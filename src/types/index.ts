@@ -37,6 +37,8 @@ export interface ProductImage {
   product_id: string;
   storage_path: string;
   url: string;
+  /** Optional small copy (≈640px) for cards, menus and the cart; falls back to url */
+  thumb_url?: string | null;
   alt: string | null;
   sort_order: number;
 }
@@ -46,6 +48,15 @@ export interface ProductVariant {
   product_id: string;
   size: string;
   stock_qty: number;
+}
+
+/** A colour the product comes in. hex (and hex2 for two-tone) is sampled from that colour's photo. */
+export interface ProductColour {
+  name: string;
+  hex: string;
+  hex2?: string | null;
+  /** Index into the product's images showing this colour, or null if there is no photo of it */
+  image_index: number | null;
 }
 
 export interface Product {
@@ -77,6 +88,8 @@ export interface Product {
   metre_step: number | null;
   fabric: string | null;
   care_instructions: string | null;
+  /** Colours to choose from (empty or missing = no colour choice). */
+  colours?: ProductColour[];
   created_at: string;
   updated_at: string;
 }
@@ -146,6 +159,7 @@ export interface OrderItem {
   quantity: number;
   length_metres: number | null;
   size: string | null;
+  colour?: string | null;
   stitching: boolean;
   stitching_charge: number;
   sizing: Sizing | null;
@@ -162,7 +176,10 @@ export interface ShopSettings {
   default_stitching_charge: number; // paise
   /** Optional per-category stitching charge, keyed by category slug. Paise. */
   stitching_charge_by_category: Record<string, number>;
-  domestic_shipping_fee: number; // paise
+  /** India Post, per item, to the Kerala postal circle (PIN 670000–695999). Paise. */
+  shipping_kerala_per_item: number;
+  /** India Post, per item, to the rest of India. Paise. */
+  shipping_india_per_item: number;
   /** Free domestic shipping at or above this subtotal. null = never free. Paise. */
   free_shipping_above: number | null;
   /** International flat rates by ISO country code. Countries not listed cannot check out. Paise. */

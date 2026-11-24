@@ -29,6 +29,7 @@ export function OrderDetail({ order }: { order: OrderWithItems }) {
                 {formatINR(i.unit_price)}
                 {i.product_type === "running_material" ? ` / m × ${i.length_metres} m` : ""} × {i.quantity}
               </p>
+              {i.colour && <p>Colour: {i.colour}</p>}
               {i.size && <p>Size: {i.size}</p>}
               {i.stitching && <p>Stitching: +{formatINR(i.stitching_charge)} each</p>}
               <SizingSummary sizing={i.sizing} />

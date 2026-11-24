@@ -61,6 +61,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <tr key={i.id}>
               <td>
                 {i.product_name}
+                {i.colour && ` (${i.colour})`}
                 {i.size && ` (${i.size})`}
               </td>
               <td>{i.product_type === "running_material" ? `${i.length_metres} m` : i.quantity}</td>

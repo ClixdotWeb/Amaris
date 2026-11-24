@@ -25,9 +25,14 @@ export default async function AdminSettingsPage() {
         <fieldset>
           <legend>Domestic shipping (India Post)</legend>
           <label>
-            Shipping fee (₹)
-            <input name="domestic_shipping_fee" type="number" step="0.01" min={0} defaultValue={rupees(s.domestic_shipping_fee)} />
+            Per item within Kerala (₹, PIN codes 670000–695999)
+            <input name="shipping_kerala_per_item" type="number" step="0.01" min={0} defaultValue={rupees(s.shipping_kerala_per_item)} />
           </label>
+          <label>
+            Per item to other states (₹)
+            <input name="shipping_india_per_item" type="number" step="0.01" min={0} defaultValue={rupees(s.shipping_india_per_item)} />
+          </label>
+          <p>The charge is multiplied by the number of items in the order.</p>
           <label>
             Free shipping on orders above (₹, leave empty for never)
             <input name="free_shipping_above" type="number" step="0.01" min={0} defaultValue={rupees(s.free_shipping_above)} />

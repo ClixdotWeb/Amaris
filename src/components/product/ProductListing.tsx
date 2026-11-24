@@ -11,6 +11,19 @@ const PAGE_SIZE = 24;
 type Sort = "newest" | "price_asc" | "price_desc";
 
 /** Shared listing used by category, New Arrivals, Hot Deals and Search pages. */
+/** Compact page list: first, last and the pages either side of the current one, with gaps (null) between. */
+function pageList(page: number, pages: number): (number | null)[] {
+  const keep = new Set([1, pages, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pages));
+  const out: (number | null)[] = [];
+  let prev = 0;
+  for (const n of [...keep].sort((a, b) => a - b)) {
+    if (n - prev > 1) out.push(n - prev === 2 ? n - 1 : null);
+    out.push(n);
+    prev = n;
+  }
+  return out;
+}
+
 export async function ProductListing({
   title,
   description,
@@ -75,17 +88,23 @@ export async function ProductListing({
         <ProductGrid products={products} />
 
         {pages > 1 && (
-          <nav aria-label="Pagination" className="mt-16 flex items-center justify-center gap-2">
+          <nav aria-label="Pagination" className="mt-16 flex flex-wrap items-center justify-center gap-2">
             {page > 1 && (
               <Link href={pageHref(page - 1)} className="chip" aria-label="Previous page">
                 <ChevronLeft size={16} />
               </Link>
             )}
-            {Array.from({ length: pages }, (_, n) => n + 1).map((n) => (
-              <Link key={n} href={pageHref(n)} className={`chip ${n === page ? "chip-active" : ""}`} aria-current={n === page ? "page" : undefined}>
-                {n}
-              </Link>
-            ))}
+            {pageList(page, pages).map((n, k) =>
+              n === null ? (
+                <span key={`gap-${k}`} className="px-1 text-sm text-muted" aria-hidden>
+                  …
+                </span>
+              ) : (
+                <Link key={n} href={pageHref(n)} className={`chip ${n === page ? "chip-active" : ""}`} aria-current={n === page ? "page" : undefined}>
+                  {n}
+                </Link>
+              ),
+            )}
             {page < pages && (
               <Link href={pageHref(page + 1)} className="chip" aria-label="Next page">
                 <ChevronRight size={16} />

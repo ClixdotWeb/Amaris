@@ -41,7 +41,7 @@ export function CheckoutForm({
 }: {
   email: string;
   savedAddresses: Address[];
-  settings: Pick<ShopSettings, "domestic_shipping_fee" | "free_shipping_above" | "international_rates">;
+  settings: Pick<ShopSettings, "shipping_kerala_per_item" | "shipping_india_per_item" | "free_shipping_above" | "international_rates">;
   /** Preview mode (no database): everything renders but payment is disabled. */
   preview?: boolean;
 }) {
@@ -67,9 +67,12 @@ export function CheckoutForm({
       </div>
     );
 
-  const shipping = shippingFeeFor(address.country, subtotal, settings as ShopSettings);
-  const total = subtotal + (shipping ?? 0);
+  const itemCount = items.reduce((n, i) => n + i.quantity, 0);
+  const shipping = shippingFeeFor(address, subtotal, itemCount, settings as ShopSettings);
   const international = address.country !== "IN";
+  // India: the rate depends on the PIN code (Kerala or not), so wait for it before adding shipping
+  const needsPin = !international && !/^[1-9]\d{5}$/.test(address.pincode.trim()) && !address.state.trim();
+  const total = subtotal + (needsPin ? 0 : (shipping ?? 0));
   const hasMadeToOrder = items.some((i) => i.dispatch === "made_to_order");
 
   async function pay(e: React.FormEvent) {
@@ -89,6 +92,7 @@ export function CheckoutForm({
             productId: i.productId,
             quantity: i.quantity,
             size: i.size,
+            colour: i.colour,
             lengthMetres: i.lengthMetres,
             stitching: i.stitching,
             sizing: i.sizing,
@@ -225,7 +229,7 @@ export function CheckoutForm({
             )}
             <div className="flex justify-between">
               <dt className="text-muted">Shipping {international ? "(courier)" : "(India Post)"}</dt>
-              <dd>{shipping === null ? "Not available" : shipping === 0 ? "Free" : formatINR(shipping)}</dd>
+              <dd>{needsPin ? <span className="text-muted">Enter PIN code</span> : shipping === null ? "Not available" : shipping === 0 ? "Free" : formatINR(shipping)}</dd>
             </div>
             <div className="flex items-baseline justify-between border-t border-sand pt-4">
               <dt className="text-base">Total</dt>
@@ -255,7 +259,7 @@ export function CheckoutForm({
 
           {error && <p role="alert" className="mt-4 text-sm text-sale">{error}</p>}
 
-          <button type="submit" disabled={busy || shipping === null || !acceptedPolicies || !confirmedAddress} className="btn-primary mt-5 w-full">
+          <button type="submit" disabled={busy || shipping === null || needsPin || !acceptedPolicies || !confirmedAddress} className="btn-primary mt-5 w-full">
             <Lock size={14} />
             {busy ? "Processing…" : `Pay ${formatINR(total)}`}
           </button>

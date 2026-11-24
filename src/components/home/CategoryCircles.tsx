@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { categories } from "@/config/navigation";
-import { categoryPhoto, img } from "@/lib/data/mock";
+import { categoryPhoto } from "@/lib/data/mock";
 
 const SHORT: Record<string, string> = {
   "unstitched-salwar-suits": "Unstitched Suits",
@@ -23,7 +23,7 @@ export function CategoryCircles() {
       className="no-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 pt-2 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-10 md:overflow-visible md:px-0 lg:grid-cols-8 lg:gap-8"
     >
       {categories.map((c) => {
-        const photo = categoryPhoto(c.slug);
+        const photo = categoryPhoto(c.slug, 420);
         return (
           <li key={c.slug} className="w-28 shrink-0 md:w-auto">
             <Link href={`/shop/${c.slug}`} className="group flex flex-col items-center text-center outline-none">
@@ -52,7 +52,7 @@ export function CategoryCircles() {
                 <span className="absolute inset-0 overflow-hidden rounded-full bg-cream">
                   {photo && (
                     <img
-                      src={img(photo, 420)}
+                      src={photo}
                       alt=""
                       loading="lazy"
                       className="h-full w-full object-cover transition-[scale,filter] duration-[1100ms] group-hover:scale-[1.1] group-hover:saturate-[1.08] group-focus-visible:scale-[1.1]"

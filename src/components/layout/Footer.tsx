@@ -10,7 +10,7 @@ const link = "text-sm text-ivory/75 transition-colors hover:text-white";
 
 export function Footer() {
   return (
-    <footer className="mt-24 bg-maroon-dark pb-16 text-ivory lg:pb-0">
+    <footer className="mt-24 bg-maroon-dark text-ivory">
       <div data-reveal-stagger className="container-x grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr]">
         <div>
           <Logo light className="h-28" />

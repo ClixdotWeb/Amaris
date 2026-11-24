@@ -14,8 +14,9 @@ on conflict (slug) do nothing;
 insert into settings (id, data) values (1, '{
   "default_stitching_charge": 50000,
   "stitching_charge_by_category": {},
-  "domestic_shipping_fee": 10000,
-  "free_shipping_above": null,
+  "shipping_kerala_per_item": 6000,
+  "shipping_india_per_item": 9000,
+  "free_shipping_above": 299900,
   "international_rates": {},
   "cod_enabled": false
 }'::jsonb)

@@ -7,7 +7,8 @@ import { mockSettings } from "./mock";
 const DEFAULTS: ShopSettings = {
   default_stitching_charge: 0,
   stitching_charge_by_category: {},
-  domestic_shipping_fee: 0,
+  shipping_kerala_per_item: 6000, // ₹60
+  shipping_india_per_item: 9000, // ₹90
   free_shipping_above: null,
   international_rates: {},
   cod_enabled: false,

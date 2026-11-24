@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Product photos (1.2 GB) live on this computer and are uploaded to Cloudinary, not stored in git
+/public/Assets/products/

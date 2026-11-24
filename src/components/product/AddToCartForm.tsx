@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, Info } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { SizingPicker, isSizingComplete } from "./SizingPicker";
 import { DispatchNote } from "./DispatchNote";
+import { ColourPicker } from "./ColourPicker";
+import { useProductImage } from "./ProductView";
 import { dispatchTypeFor, lineTotal } from "@/lib/pricing";
 import { formatINR } from "@/lib/format";
 import { KIDS_SIZES, STANDARD_SIZES, STITCHING_NOTE } from "@/config/shop";
@@ -22,6 +24,22 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
   const { add } = useCart();
   const router = useRouter();
   const type = product.product_type;
+
+  // Colour: starts on the colour in the first photo; picking a colour shows its photo, and
+  // opening a colour's photo in the gallery selects that colour.
+  const colours = product.colours ?? [];
+  const { image, setImage } = useProductImage();
+  const [colour, setColour] = useState(() => (colours.find((c) => c.image_index === 0) ?? colours[0])?.name ?? "");
+  useEffect(() => {
+    const c = colours.find((x) => x.image_index === image);
+    if (c) setColour(c.name);
+  }, [image]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pickColour = (name: string) => {
+    setColour(name);
+    const idx = colours.find((c) => c.name === name)?.image_index;
+    if (idx !== null && idx !== undefined) setImage(idx);
+  };
+  const colourImage = product.images[colours.find((c) => c.name === colour)?.image_index ?? 0] ?? product.images[0];
 
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState<string>("");
@@ -50,6 +68,7 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
         : product.stock_qty <= 0);
 
   function validate() {
+    if (colours.length && !colour) return "Please select a colour.";
     if (type === "ready_made" && product.sizes.length && !size) return "Please select a size.";
     if (needsSizing && !isSizingComplete(sizing)) return "Please select a size or fill in all required measurements.";
     return null;
@@ -63,11 +82,12 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      image: product.images[0]?.url ?? null,
+      image: colourImage?.thumb_url ?? colourImage?.url ?? null,
       productType: type,
       unitPrice: product.price,
       quantity: type === "running_material" ? 1 : quantity,
       size: type === "ready_made" && size ? size : undefined,
+      colour: colours.length ? colour : undefined,
       lengthMetres: type === "running_material" ? metres : undefined,
       stitching: type === "unstitched" ? stitching : undefined,
       stitchingCharge: stitching ? stitchingCharge : undefined,
@@ -100,6 +120,8 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
         addToCart(false);
       }}
     >
+      {colours.length > 0 && <ColourPicker colours={colours} value={colour} onChange={pickColour} />}
+
       {type === "ready_made" && product.sizes.length > 0 && (
         <fieldset>
           <legend>Size{size && <span className="ml-2 tracking-normal text-muted normal-case">: {size}</span>}</legend>

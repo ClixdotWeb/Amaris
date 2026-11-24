@@ -17,6 +17,7 @@ export interface CartItem {
   unitPrice: number; // paise
   quantity: number;
   size?: string;
+  colour?: string;
   lengthMetres?: number;
   stitching?: boolean;
   stitchingCharge?: number;
@@ -40,7 +41,7 @@ const STORAGE_KEY = "amaris_cart_v1";
 const CartContext = createContext<CartContextValue | null>(null);
 
 const keyFor = (i: Omit<CartItem, "key">) =>
-  JSON.stringify([i.productId, i.size, i.lengthMetres, i.stitching, i.sizing]);
+  JSON.stringify([i.productId, i.size, i.colour, i.lengthMetres, i.stitching, i.sizing]);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);

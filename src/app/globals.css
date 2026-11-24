@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tailwind scans the project for class names. Skip the product photos (1+ GB) and the product data:
+   they contain no classes and scanning them slows every CSS rebuild. */
+@source not "../../public";
+@source not "../lib/data/catalog.json";
+
 /*
  * Amaris design tokens. PLACEHOLDER palette until the client sends brand colours.
  * Change these values and the whole site follows.
@@ -112,7 +117,7 @@
   .btn-primary { background: var(--color-maroon); color: #fff; }
   .btn-primary:hover:not(:disabled) { background: var(--color-maroon-dark); }
   .btn-outline { border-color: var(--color-ink); color: var(--color-ink); background: transparent; }
-  .btn-outline:hover:not(:disabled) { background: var(--color-ink); color: #fff; }
+  .btn-outline:hover:not(:disabled) { background: var(--color-maroon); border-color: var(--color-maroon); color: #fff; }
   .btn-light { background: #fff; color: var(--color-ink); }
   .btn-light:hover { background: var(--color-maroon); color: #fff; }
 
@@ -232,3 +237,28 @@ html[data-hero-tone="dark"] header[data-overlay="true"] .nav-link { color: #fff;
 html[data-hero-tone="dark"] header[data-overlay="true"] .nav-link:hover { color: #ecc7ae; }
 html[data-hero-tone="dark"] header[data-overlay="true"] .nav-link::after { background-color: currentColor; }
 html[data-hero-tone="dark"] header[data-overlay="true"] .nav-link-sale { color: #f4b9a9; }
+
+/* ───────────── Site background: vintage damask wallpaper ─────────────
+ * Tile: public/Assets/damask-white.webp (white/pearl recolour of damask-tile.webp, the 4-way mirror of damask-source.png).
+ * Change --pattern-opacity to make it stronger or softer (0 = off, 1 = full strength).
+ * Sections with their own background (header, burgundy banners, cards) sit on top of it.
+ */
+:root {
+  --pattern-opacity: 0.45;
+  --pattern-size: 662px; /* width of one repeat; the tile is 2 repeats wide, shown at this scale */
+}
+body {
+  position: relative;
+  isolation: isolate;
+}
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url("/Assets/damask-white.webp") 0 0 / calc(var(--pattern-size) * 2) auto repeat;
+  opacity: var(--pattern-opacity);
+}
+/* Admin panel stays plain */
+body:has(.admin-area)::before { display: none; }

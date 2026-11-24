@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { NavProgress } from "./NavProgress";
 
 /**
  * Sticky header wrapper.
@@ -25,6 +26,7 @@ export function HeaderShell({ children }: { children: React.ReactNode }) {
       data-overlay={isHome && !scrolled}
       className="group/header sticky top-0 z-50 border-b border-sand/80 bg-ivory/95 backdrop-blur transition-[background-color,border-color,box-shadow,color] duration-500 data-[scrolled=true]:shadow-[0_10px_30px_-18px_rgba(43,42,44,0.35)]"
     >
+      <NavProgress />
       {children}
     </header>
   );

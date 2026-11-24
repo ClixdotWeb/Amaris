@@ -22,6 +22,7 @@ export const cartLineSchema = z.object({
   productId: z.string().uuid(),
   quantity: z.number().int().min(1).max(50),
   size: z.string().optional(), // ready made
+  colour: z.string().max(80).optional(), // products with colour options
   lengthMetres: z.number().positive().max(100).optional(), // running material
   stitching: z.boolean().optional(), // unstitched
   sizing: sizingSchema.optional(), // unstitched + stitching, or custom made

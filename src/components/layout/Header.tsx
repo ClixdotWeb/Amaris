@@ -1,26 +1,25 @@
 import Link from "next/link";
-import { Search, User } from "lucide-react";
+import { Search } from "lucide-react";
 import { headerNav, isGroup } from "@/config/navigation";
-import { categoryPhoto, img } from "@/lib/data/mock";
+import { categoryPhoto } from "@/lib/data/mock";
 import { CartCount } from "@/components/cart/CartCount";
 import { getUser } from "@/lib/auth";
+import { USE_MOCK } from "@/lib/data/mode";
+import { AccountMenu } from "./AccountMenu";
 import { HeaderShell } from "./HeaderShell";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 import { NavLinks } from "./NavLinks";
 
-/** Thumbnails for the mega menu and drawer, keyed by category slug. TODO: use the client's category images. */
+/** Thumbnails for the mega menu and drawer, keyed by category slug (product photos; see mock.ts CAT). */
 const navImages: Record<string, string | undefined> = Object.fromEntries(
   headerNav
     .filter(isGroup)
     .flatMap((g) => g.children)
-    .map((c) => {
-      const photo = categoryPhoto(c.slug);
-      return [c.slug, photo ? img(photo, 400) : undefined];
-    }),
+    .map((c) => [c.slug, categoryPhoto(c.slug, 400)]),
 );
 
-const iconLink = "flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 hover:bg-cream hover:text-maroon";
+const iconLink = "flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-150 hover:bg-cream hover:text-maroon";
 
 /**
  * One-row header: logo left · categories centred · icons right.
@@ -48,9 +47,9 @@ export async function Header() {
           <Link href="/search" aria-label="Search" className={iconLink}>
             <Search size={19} strokeWidth={1.4} />
           </Link>
-          <Link href={user ? "/account" : "/login"} aria-label="My account" className={`${iconLink} hidden sm:flex`}>
-            <User size={19} strokeWidth={1.4} />
-          </Link>
+          <div className="hidden sm:block">
+            <AccountMenu email={user?.email ?? null} preview={USE_MOCK} className={iconLink} />
+          </div>
           <CartCount className={iconLink} />
         </div>
       </div>

@@ -36,6 +36,7 @@ export function CartLineItem({ item, readOnly = false }: { item: CartItem; readO
         <p className="text-xs text-muted">
           {formatINR(item.unitPrice)}
           {item.productType === "running_material" ? " / metre" : " each"}
+          {item.colour && ` · ${item.colour}`}
           {item.size && ` · Size ${item.size}`}
           {item.lengthMetres && ` · ${item.lengthMetres} m`}
         </p>

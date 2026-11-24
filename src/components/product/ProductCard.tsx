@@ -51,7 +51,7 @@ export function ProductCard({ product, tone = "light" }: { product: ProductWithR
         <div className="relative aspect-[3/5] overflow-hidden rounded-[6px] bg-cream">
           {first && (
             <img
-              src={first.url}
+              src={first.thumb_url ?? first.url}
               alt={first.alt ?? product.name}
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
@@ -59,7 +59,7 @@ export function ProductCard({ product, tone = "light" }: { product: ProductWithR
           )}
           {second && (
             <img
-              src={second.url}
+              src={second.thumb_url ?? second.url}
               alt=""
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"

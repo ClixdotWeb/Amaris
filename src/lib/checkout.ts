@@ -26,6 +26,14 @@ export async function priceCart(input: CheckoutInput) {
     let stitchingCharge = 0;
     let sizing = null as PricedItem["sizing"];
     let size: string | null = null;
+    let colour: string | null = null;
+    let image = p.images[0]?.url ?? null;
+    if (p.colours?.length) {
+      const c = p.colours.find((x) => x.name === line.colour);
+      if (!c) throw new CheckoutError(`Choose a colour for ${p.name}.`);
+      colour = c.name;
+      if (c.image_index !== null && p.images[c.image_index]) image = p.images[c.image_index].url;
+    }
     let lengthMetres: number | null = null;
 
     switch (p.product_type) {
@@ -73,11 +81,12 @@ export async function priceCart(input: CheckoutInput) {
       product_id: p.id,
       product_name: p.name,
       product_type: p.product_type,
-      image_url: p.images[0]?.url ?? null,
+      image_url: image,
       unit_price: p.price,
       quantity: line.quantity,
       length_metres: lengthMetres,
       size,
+      colour,
       stitching,
       stitching_charge: stitchingCharge,
       sizing,
@@ -89,7 +98,8 @@ export async function priceCart(input: CheckoutInput) {
   const stitchingTotal = items.reduce((s, i) => s + i.stitching_charge * i.quantity, 0);
   const subtotal = items.reduce((s, i) => s + i.line_total, 0) - stitchingTotal;
   const country = input.address.country;
-  const shippingFee = shippingFeeFor(country, subtotal + stitchingTotal, settings);
+  const itemCount = items.reduce((n, i) => n + i.quantity, 0);
+  const shippingFee = shippingFeeFor(input.address, subtotal + stitchingTotal, itemCount, settings);
   if (shippingFee === null) throw new CheckoutError("Sorry, we don't ship to this country yet. Please contact us.");
 
   return {

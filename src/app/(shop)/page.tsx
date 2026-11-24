@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { listProducts } from "@/lib/data/products";
-import { img, PHOTOS } from "@/lib/data/mock";
+import { categoryPhoto } from "@/lib/data/mock";
 import { VisitCta } from "@/components/home/VisitCta";
 import { WordReveal } from "@/components/ui/WordReveal";
 import fs from "node:fs";
@@ -19,50 +19,44 @@ const publicFile = (p: string) => (fs.existsSync(path.join(process.cwd(), "publi
 
 /**
  * Editorial hero slides. Drop videos into public/videos/ with these names and they are used automatically:
- * hero-bridal.mp4 / hero-bridal-mobile.mp4 (9:16), hero-saree(.mp4|-mobile.mp4), hero-stitching(.mp4|-mobile.mp4).
- * TODO: posters are placeholders. Replace with frames from the client's videos.
+ * hero-ready.mp4 / hero-ready-mobile.mp4 (9:16), hero-saree(.mp4|-mobile.mp4), hero-stitching(.mp4|-mobile.mp4).
+ * Without a video, slides show the boutique's campaign photos from public/Assets/hero/.
  */
 function heroSlides(): EditorialSlide[] {
   return [
     {
-      left: "bridal",
-      right: "couture",
+      left: "ready",
+      right: "to wear",
       tagline: "Handpicked in Kerala",
-      description: "Lehengas, anarkalis and occasion wear, chosen for the moments you'll remember.",
-      href: "/shop/frocks-kurtis",
-      // Navy and wine gowns with gold floral embroidery on a dark backdrop (Unsplash placeholder): the attire is the
-      // subject. Desktop: wide crop centred on the embroidery; phones: the original portrait photo (full gowns).
-      poster:
-        "https://images.unsplash.com/photo-1756483509254-3cc48a5a15b2?auto=format&fit=crop&crop=focalpoint&fp-x=0.5&fp-y=0.55&w=2400&h=1350&q=80",
-      posterMobile: img("1756483509254-3cc48a5a15b2", 1200),
-      posterPosition: "50% 50%",
-      video: publicFile("/videos/hero-bridal.mp4"),
-      videoMobile: publicFile("/videos/hero-bridal-mobile.mp4"),
+      description: "Anarkalis and salwar sets, ready to wear and dispatched within 48 hours.",
+      href: "/shop/ready-made",
+      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
+      poster: "/Assets/hero/hero-readymade-black-chikankari.jpg",
+      posterPosition: "36% 50%",
+      video: publicFile("/videos/hero-ready.mp4"),
+      videoMobile: publicFile("/videos/hero-ready-mobile.mp4"),
     },
     {
-      left: "woven",
-      amp: true,
-      right: "sarees",
+      left: "heritage",
+      right: "drapes",
       tagline: "Handpicked in Kerala",
       description: "From classic Kerala kasavu to festive silks, draped in timeless grace.",
       href: "/shop/saree",
-      // Cream tissue saree with red-and-gold zari border and temple jewellery, garden bokeh (Unsplash placeholder).
-      // Desktop: wide crop on the drape and weave; phones: the original portrait photo.
-      poster:
-        "https://images.unsplash.com/photo-1678705730064-a7ecbab4b3fb?auto=format&fit=crop&crop=focalpoint&fp-x=0.5&fp-y=0.55&w=2400&h=1350&q=80",
-      posterMobile: img("1678705730064-a7ecbab4b3fb", 1200),
-      posterPosition: "50% 50%",
+      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
+      poster: "/Assets/hero/hero-saree-red-banarasi.jpg",
+      posterPosition: "60% 50%",
       video: publicFile("/videos/hero-saree.mp4"),
       videoMobile: publicFile("/videos/hero-saree-mobile.mp4"),
     },
     {
-      left: "made",
-      right: "to measure",
+      left: "tailored",
+      right: "for you",
       tagline: "Handpicked in Kerala",
       description: "Choose your fabric and we stitch it to your size or exact measurements.",
       href: "/shop/unstitched-salwar-suits",
-      poster: "/Assets/banner-hq.webp",
-      posterPosition: "50% 30%",
+      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
+      poster: "/Assets/hero/hero-suit-yellow-garden.jpg",
+      posterPosition: "71% 50%",
       video: publicFile("/videos/hero-stitching.mp4"),
       videoMobile: publicFile("/videos/hero-stitching-mobile.mp4"),
     },
@@ -100,7 +94,7 @@ export default async function HomePage() {
                 href: "/new-arrivals",
                 label: "New arrivals",
                 sub: "Fresh in the boutique",
-                image: newArrivals.products[0].images[0]?.url ?? "",
+                image: newArrivals.products[0].images[0]?.thumb_url ?? newArrivals.products[0].images[0]?.url ?? "",
               }
             : undefined
         }
@@ -135,11 +129,12 @@ export default async function HomePage() {
       {/* Split promo tiles */}
       <section className="container-x grid gap-4 pt-24 md:grid-cols-2 md:gap-6">
         {[
-          { photo: PHOTOS.kids[0], eyebrow: "Made to order", title: "Kids Dresses", href: "/shop/kids-dresses" },
-          { photo: PHOTOS.linen[0], eyebrow: "For your home", title: "Home Linen", href: "/shop/home-linen" },
+          // Same pictures as the category covers (mock.ts): real bedsheet photo; kids is a placeholder until photographed.
+          { slug: "kids-dresses", eyebrow: "Made to order", title: "Kids Dresses", href: "/shop/kids-dresses" },
+          { slug: "home-linen", eyebrow: "For your home", title: "Home Linen", href: "/shop/home-linen" },
         ].map((t) => (
           <Link key={t.href} href={t.href} className="group relative block aspect-[4/3] overflow-hidden md:aspect-[5/4]">
-            <img src={img(t.photo, 1100)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <img src={categoryPhoto(t.slug, 1100)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-8 text-ivory">
               <p className="eyebrow !text-gold-light">{t.eyebrow}</p>

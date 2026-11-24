@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/data/settings";
 import { stitchingChargeFor } from "@/lib/pricing";
 import { formatINR } from "@/lib/format";
 import { ProductGallery } from "@/components/product/ProductGallery";
+import { ProductView } from "@/components/product/ProductView";
 import { AddToCartForm } from "@/components/product/AddToCartForm";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SectionHeading } from "@/components/home/SectionHeading";
@@ -27,7 +28,7 @@ function Accordion({ title, children, open = false }: { title: string; children:
         {title}
         <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
       </summary>
-      <div className="pb-5 text-sm leading-relaxed text-muted">{children}</div>
+      <div className="pb-5 text-sm leading-relaxed whitespace-pre-line text-muted">{children}</div>
     </details>
   );
 }
@@ -52,12 +53,13 @@ export default async function ProductPage({ params }: Props) {
           <Link href={`/shop/${product.category.slug}`} className="hover:text-maroon">{product.category.name}</Link>
         </nav>
 
+        <ProductView>
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-          <div data-reveal className="lg:sticky lg:top-40 lg:self-start">
+          <div data-reveal className="min-w-0 lg:sticky lg:top-40 lg:self-start">
             <ProductGallery images={product.images} name={product.name} />
           </div>
 
-          <div data-reveal-stagger>
+          <div data-reveal-stagger className="min-w-0">
             <p className="eyebrow">{product.category.name}</p>
             <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">{product.name}</h1>
             <div className="mt-4 flex items-baseline gap-3">
@@ -83,6 +85,11 @@ export default async function ProductPage({ params }: Props) {
                 <ul className="list-disc space-y-1 pl-5">
                   <li>In-stock items are dispatched within 48 hours. Pre-order and custom-made items in 45–60 days.</li>
                   <li>Delivery after dispatch: Kerala {DELIVERY_AFTER_DISPATCH.kerala}, rest of India {DELIVERY_AFTER_DISPATCH.restOfIndia}.</li>
+                  <li>
+                    Shipping charge: {formatINR(settings.shipping_kerala_per_item)} per item within Kerala,{" "}
+                    {formatINR(settings.shipping_india_per_item)} per item to other states
+                    {settings.free_shipping_above != null && <>. Free on orders of {formatINR(settings.free_shipping_above)} or more</>}.
+                  </li>
                   <li>Shipped by India Post. International orders by courier.</li>
                 </ul>
                 <Link href="/policies/shipping" className="mt-2 inline-block text-maroon underline underline-offset-4">Shipping policy</Link>
@@ -94,6 +101,7 @@ export default async function ProductPage({ params }: Props) {
             </div>
           </div>
         </div>
+        </ProductView>
       </div>
 
       {related.length > 0 && (
