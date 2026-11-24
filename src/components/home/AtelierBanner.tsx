@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { WordReveal } from "@/components/ui/WordReveal";
+import { cloudImage, PHOTO_WIDE } from "@/lib/images";
 
 /** Wall colour sampled from the banner photo (fallback while the photo loads). */
 const WALL = "#350f10";
@@ -8,7 +9,7 @@ const WALL = "#350f10";
 /**
  * Stitching-service banner: the hanger photo fills the whole banner, copy centred on top.
  * A soft burgundy shade concentrated in the middle keeps the text readable while the hanger stays visible.
- * Photo: public/Assets/banner-hq.webp (sharpened 2x export of "banner picture.png").
+ * Photo: amaris/site/banner-hq on Cloudinary (local copy public/Assets/banner-hq.webp).
  */
 export function AtelierBanner() {
   return (
@@ -21,7 +22,7 @@ export function AtelierBanner() {
         {/* Full-bleed photo (curtain reveal + parallax) */}
         <div data-reveal="curtain" className="absolute inset-0 -z-10 overflow-hidden">
           <img
-            src="/Assets/banner-hq.webp"
+            src={cloudImage("/Assets/banner-hq.webp", PHOTO_WIDE)}
             alt="Amaris velvet hanger on a maroon panelled wall"
             loading="lazy"
             decoding="async"

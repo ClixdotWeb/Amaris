@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { cloudImage, LOGO_WIDTH } from "@/lib/images";
 
 export type EditorialSlide = {
   /** Left headline word (italic serif) */
@@ -425,7 +426,7 @@ function SlideMedia({ slide, active, mobile }: { slide: EditorialSlide; active: 
 function IntroPlaceholder() {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-8" aria-hidden>
-      <img src="/Assets/logo-dark.png" alt="" className="h-28 w-auto md:h-36" />
+      <img src={cloudImage("/Assets/logo-dark.png", LOGO_WIDTH)} alt="" className="h-28 w-auto md:h-36" />
       <span className="relative h-px w-28 overflow-hidden bg-[#350f10]/15">
         <span className="absolute inset-y-0 left-0 w-1/3 animate-[loader_1.4s_ease-in-out_infinite] bg-[#b07a5c]" />
       </span>

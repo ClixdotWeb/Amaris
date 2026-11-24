@@ -11,7 +11,7 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
   return (
     <div className="flex min-w-0 flex-col-reverse gap-3 md:flex-row md:gap-4">
       {images.length > 1 && (
-        <ul className="no-scrollbar flex gap-3 overflow-x-auto md:w-20 md:flex-col md:overflow-visible">
+        <ul className="no-scrollbar flex gap-3 overflow-x-auto md:w-20 md:flex-col md:overflow-visible lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto">
           {images.map((img, i) => (
             <li key={img.id} className="w-20 shrink-0">
               <button
@@ -27,7 +27,8 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
           ))}
         </ul>
       )}
-      <div className="group relative aspect-[3/4] flex-1 overflow-hidden bg-cream">
+      {/* Desktop: never taller than the window (pinned beside the scrolling details), so the whole outfit stays in view */}
+      <div className="group relative aspect-[3/4] flex-1 overflow-hidden bg-cream lg:max-w-[calc((100svh-8rem)*0.75)]">
         <img src={current.url} alt={current.alt ?? name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
       </div>
     </div>

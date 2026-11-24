@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Phone, MessageCircle, Plus } from "lucide-react";
 import { footerNav, isGroup, type HeaderNavItem } from "@/config/navigation";
 import { site, whatsappLink } from "@/config/site";
+import { cloudImage, LOGO_WIDTH } from "@/lib/images";
 
 const row =
   "flex w-full items-center justify-between py-4 text-[13px] tracking-[0.16em] uppercase";
@@ -68,7 +69,7 @@ export function MobileMenu({
               <div className="flex items-center justify-between border-b border-sand px-5 py-4">
                 <Link href="/" aria-label="Amaris Boutique home">
                   <img
-                    src="/Assets/logo-dark.png"
+                    src={cloudImage("/Assets/logo-dark.png", LOGO_WIDTH)}
                     alt="Amaris Boutique"
                     className="h-12 w-auto"
                   />

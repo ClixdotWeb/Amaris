@@ -1,73 +1,107 @@
 import { PolicyPage } from "@/components/PolicyPage";
-import { site } from "@/config/site";
 
 export const metadata = { title: "Return & Refund Policy" };
 
-// TODO: replace each section's text with the client's EXACT wording from WEBSITE_DESIGN_AMARIS.xlsx (Sheet1).
-// Section headings below follow the brief (CLAUDE.md §7).
+// Client's wording from WEBSITE_DESIGN_AMARIS.xlsx (Sheet1). Section numbers dropped (they were not consecutive).
 export default function ReturnRefundPage() {
   return (
     <PolicyPage title="Return & Refund Policy" updated="2026">
       <section>
-        <h2>All sales are final</h2>
-        <p>We offer a replacement only for a damaged product, wrong product or wrong size. A refund is given only if a replacement is out of stock.</p>
+        <p>
+          All sales are final. We only offer replacements if your item arrives damaged, or if you receive the wrong product or size.
+          Refunds are only issued if a replacement is out of stock.
+        </p>
       </section>
       <section>
-        <h2>How to report a problem</h2>
-        <p>Report within 24 hours of delivery with a continuous, unedited unboxing video that shows:</p>
+        <h2>How to Report an Issue</h2>
+        <p>You must contact us within 24 hours of delivery and provide a continuous, unedited unboxing video. To be accepted, your video must clearly show:</p>
         <ul>
           <li>All sides of the sealed package, including the shipping label</li>
-          <li>The full opening of the package</li>
-          <li>The damage or wrong item, in clear light</li>
+          <li>The full opening process from start to finish</li>
+          <li>The damage or wrong item in clear lighting</li>
         </ul>
-        <p>No video, no complaint.</p>
+        <p>
+          <strong>Please note:</strong> We cannot accept complaints without a complete unboxing video.
+        </p>
       </section>
       <section>
-        <h2>Not covered</h2>
+        <h2>What Is Not Covered</h2>
+        <p>We cannot accept returns or exchanges for:</p>
         <ul>
-          <li>Damage from washing, misuse or wear</li>
-          <li>Slight colour differences due to lighting or screens</li>
-          <li>Minor loose threads or stitching variations</li>
-          <li>Change of mind</li>
+          <li>Damage caused by washing, misuse, or normal wear and tear</li>
+          <li>Slight color differences caused by lighting or screen settings</li>
+          <li>Minor details like loose threads or slight stitching variations</li>
+          <li>Personal preference (if you simply change your mind or dislike the item)</li>
         </ul>
       </section>
       <section>
-        <h2>Exchange</h2>
-        <p>Case by case, within 3 days. Items must be unused, in original condition, and exchanged for equal or higher value. No refunds of price difference. The customer pays all courier and re-order charges.</p>
+        <h2>Exchange Policy</h2>
+        <p>
+          Case-by-case exchanges are accepted within 3 days of delivery for unused items in original condition. Replacement items must be
+          of equal or higher value (no price-difference refunds), and customers cover all courier costs, return and re-order charges.
+        </p>
       </section>
       <section>
-        <h2>Return shipping</h2>
-        <p>We do not offer pickup. After approval, the customer ships the item back. Shipping charges are non-refundable.</p>
+        <h2>Return Shipping</h2>
+        <p>We do not provide return pickup. Customers must self-ship the product after approval. Shipping charges are non-refundable.</p>
       </section>
       <section>
-        <h2>Wash & care</h2>
-        <p>We are not responsible for fading, shrinkage or fabric damage after washing or wear.</p>
+        <h2>Wash &amp; Care Disclaimer</h2>
+        <p>
+          Please follow all garment wash and care instructions carefully. Amaris Boutique is not responsible for color fading, shrinkage,
+          or fabric damage after washing or wear.
+        </p>
       </section>
       <section>
-        <h2>Unauthorized sellers</h2>
-        <p>We are not liable for purchases from fake accounts or third parties misusing our images or videos.</p>
+        <h2>Disclaimer of Liability – Unauthorized Sellers</h2>
+        <p>
+          Amaris Boutique is not liable for any transactions, products, or damages resulting from purchases made through unauthorized
+          third parties, counterfeit accounts, or fraudulent sellers misusing our intellectual property, including proprietary images and
+          videos. Customers are solely responsible for verifying the authenticity of the sales channel prior to purchase.
+        </p>
       </section>
       <section>
-        <h2>Saree policy</h2>
-        <p>Minor thread variations, slubs, knots and slight colour differences are normal. Valid defects are only: tears, wrong saree length, or a missing blouse piece (if included).</p>
+        <h2>Saree-Specific Policy</h2>
+        <p>
+          Natural weaving characteristics—such as minor thread variations, slubs, knots, and slight color differences—are normal and not
+          considered defects. Valid defects only include tears, incorrect saree length, or a missing blouse piece (if one was included in
+          the product description).
+        </p>
       </section>
       <section>
-        <h2>Partial orders</h2>
-        <p>If one item fails quality check before dispatch, we refund or replace that item only. Cancelling the whole order is not allowed.</p>
+        <h2>Partial Order Issue Policy</h2>
+        <p>
+          If you order multiple items and one fails our quality check before dispatch, we will offer a refund or a replacement for that
+          specific item only. Canceling the entire order is not permitted.
+        </p>
       </section>
       <section>
-        <h2>Measurements & stitching</h2>
-        <p>Items are stitched to the measurements you provide. We are not responsible for fit issues caused by incorrect measurements. Alterations cost extra (stitching + shipping).</p>
+        <h2>Measurement &amp; Stitching Policy</h2>
+        <p>
+          Custom-stitched items are tailored strictly according to the measurements you provide. Amaris Boutique is not responsible for
+          fitting issues caused by incorrect measurements. Any requested alterations will incur extra stitching and shipping charges.
+        </p>
       </section>
       <section>
-        <h2>Cancellation</h2>
-        <p>Orders are final after payment. No cancellation after confirmation or dispatch.</p>
+        <h2>Cancellation Policy</h2>
+        <p>All orders are final once payment is completed. Orders cannot be canceled after confirmation or dispatch.</p>
       </section>
       <section>
-        <h2>Contact</h2>
-        <p>{site.phones[0]} · {site.emails[0]} · {site.hours}</p>
+        <h2>Contact Information</h2>
+        <ul>
+          <li>
+            Customer Care: <a href="tel:+918547572576">+91 8547572576</a>
+          </li>
+          <li>
+            Email: <a href="mailto:amarisbymarias@gmail.com">amarisbymarias@gmail.com</a>
+          </li>
+          <li>Working Hours: Monday – Saturday, 10:00 AM – 5:00 PM (IST)</li>
+        </ul>
       </section>
-      <p>By placing an order, you agree to all of the terms above.</p>
+      <section>
+        <h2>Final Note</h2>
+        <p>By placing an order with Amaris Boutique, you acknowledge and agree to all the terms and conditions listed above.</p>
+      </section>
     </PolicyPage>
   );
 }

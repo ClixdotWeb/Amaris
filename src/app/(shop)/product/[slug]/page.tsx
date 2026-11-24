@@ -55,7 +55,7 @@ export default async function ProductPage({ params }: Props) {
 
         <ProductView>
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-          <div data-reveal className="min-w-0 lg:sticky lg:top-40 lg:self-start">
+          <div data-reveal className="min-w-0 lg:sticky lg:top-24 lg:self-start">
             <ProductGallery images={product.images} name={product.name} />
           </div>
 

@@ -1,26 +1,13 @@
 /**
  * PREVIEW DATA, used until the database is connected.
  * Products come from catalog.json: the boutique's real products (names, prices, sizes, descriptions, photos),
- * taken from the current store. Photos live in public/Assets/products/<collection>/<product>/ with a small
- * "thumb-NN.webp" copy next to each photo. Rebuild catalog.json if the product folder changes.
+ * taken from the current store. catalog.json keeps the local paths (public/Assets/products/...); the site
+ * serves those photos from Cloudinary via productPhoto() (see src/lib/images.ts).
  */
 import type { Category, ProductImage, ProductType, ProductWithRelations, ShopSettings } from "@/types";
+import { cloudImage, productPhoto, PHOTO_CARD, PHOTO_FULL } from "@/lib/images";
 import catalog from "./catalog.json";
 
-export const img = (id: string, w = 900) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
-
-/**
- * Unsplash placeholders, only for the two made-to-order categories that have no products yet.
- * TODO: replace with the client's photos once Frocks & Kurtis / Kids Dresses are photographed.
- */
-export const PHOTOS = {
-  kurti: "1676269029657-4faa15fc6c03", // pink anarkali frock
-  kids: "1620774760711-caa4c94d683a", // girl in a lilac satin dress, garden
-};
-
-/** Small copy of a product photo (made by the thumbnail script): ".../01.webp" → ".../thumb-01.webp" */
-export const thumbOf = (url: string) => url.replace(/(\d+)\.\w+$/, "thumb-$1.webp");
 
 const CAT: Record<string, { name: string; type: ProductType; photo: string; description: string }> = {
   "unstitched-salwar-suits": {
@@ -34,7 +21,7 @@ const CAT: Record<string, { name: string; type: ProductType; photo: string; desc
     description: "Easy matching sets for every day.",
   },
   "frocks-kurtis": {
-    name: "Frocks & Kurtis – Custom Made", type: "custom_made", photo: img(PHOTOS.kurti, 900),
+    name: "Frocks & Kurtis – Custom Made", type: "custom_made", photo: "/Assets/placeholders/kurti.jpg", // placeholder (Unsplash) until the client's photos arrive
     description: "Made to order in your size or to your exact measurements.",
   },
   "ready-made": {
@@ -58,7 +45,7 @@ const CAT: Record<string, { name: string; type: ProductType; photo: string; desc
     description: "Fabric sold by the metre. Choose the length you need.",
   },
   "kids-dresses": {
-    name: "Kids Dresses – Custom Made", type: "custom_made", photo: img(PHOTOS.kids, 900),
+    name: "Kids Dresses – Custom Made", type: "custom_made", photo: "/Assets/placeholders/kids.jpg", // placeholder (Unsplash) until the client's photos arrive
     description: "Festive and everyday dresses for little ones, made to order.",
   },
 };
@@ -74,13 +61,12 @@ export const mockCategories: Category[] = Object.entries(CAT).map(([slug, c], i)
 
 /**
  * Photo URL for a category (circles, menus), at roughly the given width.
- * Product photos use their small thumbnail copy; Unsplash placeholders are resized by Unsplash.
+ * All category pictures come from Cloudinary at that width.
  */
 export const categoryPhoto = (slug: string, w = 400) => {
   const photo = CAT[slug]?.photo;
   if (!photo) return undefined;
-  if (photo.startsWith("/")) return w <= 640 ? thumbOf(photo) : photo;
-  return photo.replace(/([?&])w=\d+/, `$1w=${w}`);
+  return cloudImage(photo, w);
 };
 
 type CatalogItem = {
@@ -111,8 +97,8 @@ export const mockProducts: ProductWithRelations[] = (catalog as CatalogItem[]).m
     id: `${id}-img-${j}`,
     product_id: id,
     storage_path: url,
-    url,
-    thumb_url: thumbOf(url),
+    url: productPhoto(url, PHOTO_FULL),
+    thumb_url: productPhoto(url, PHOTO_CARD),
     alt: s.name,
     sort_order: j,
   }));

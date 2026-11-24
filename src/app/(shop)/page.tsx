@@ -13,6 +13,7 @@ import { SectionHeading } from "@/components/home/SectionHeading";
 import { AtelierBanner } from "@/components/home/AtelierBanner";
 import { ProductCard } from "@/components/product/ProductCard";
 import type { ProductWithRelations } from "@/types";
+import { cloudImage, PHOTO_WIDE } from "@/lib/images";
 
 /** Only reference a video if the file is really there (otherwise the slide shows its poster). */
 const publicFile = (p: string) => (fs.existsSync(path.join(process.cwd(), "public", p)) ? p : undefined);
@@ -20,7 +21,7 @@ const publicFile = (p: string) => (fs.existsSync(path.join(process.cwd(), "publi
 /**
  * Editorial hero slides. Drop videos into public/videos/ with these names and they are used automatically:
  * hero-ready.mp4 / hero-ready-mobile.mp4 (9:16), hero-saree(.mp4|-mobile.mp4), hero-stitching(.mp4|-mobile.mp4).
- * Without a video, slides show the boutique's campaign photos from public/Assets/hero/.
+ * Without a video, slides show the boutique's campaign photos (amaris/site/hero on Cloudinary).
  */
 function heroSlides(): EditorialSlide[] {
   return [
@@ -31,7 +32,7 @@ function heroSlides(): EditorialSlide[] {
       description: "Anarkalis and salwar sets, ready to wear and dispatched within 48 hours.",
       href: "/shop/ready-made",
       // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: "/Assets/hero/hero-readymade-black-chikankari.jpg",
+      poster: cloudImage("/Assets/hero/hero-readymade-black-chikankari.jpg", PHOTO_WIDE),
       posterPosition: "36% 50%",
       video: publicFile("/videos/hero-ready.mp4"),
       videoMobile: publicFile("/videos/hero-ready-mobile.mp4"),
@@ -43,7 +44,7 @@ function heroSlides(): EditorialSlide[] {
       description: "From classic Kerala kasavu to festive silks, draped in timeless grace.",
       href: "/shop/saree",
       // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: "/Assets/hero/hero-saree-red-banarasi.jpg",
+      poster: cloudImage("/Assets/hero/hero-saree-red-banarasi.jpg", PHOTO_WIDE),
       posterPosition: "60% 50%",
       video: publicFile("/videos/hero-saree.mp4"),
       videoMobile: publicFile("/videos/hero-saree-mobile.mp4"),
@@ -55,7 +56,7 @@ function heroSlides(): EditorialSlide[] {
       description: "Choose your fabric and we stitch it to your size or exact measurements.",
       href: "/shop/unstitched-salwar-suits",
       // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: "/Assets/hero/hero-suit-yellow-garden.jpg",
+      poster: cloudImage("/Assets/hero/hero-suit-yellow-garden.jpg", PHOTO_WIDE),
       posterPosition: "71% 50%",
       video: publicFile("/videos/hero-stitching.mp4"),
       videoMobile: publicFile("/videos/hero-stitching-mobile.mp4"),

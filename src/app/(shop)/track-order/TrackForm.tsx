@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { trackOrder } from "./actions";
 import { INDIA_POST_TRACKING_URL } from "@/config/shop";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 export function TrackForm() {
   const [result, action, pending] = useActionState(trackOrder, undefined);
@@ -29,10 +30,13 @@ export function TrackForm() {
           {result.consignment ? (
             <div className="mt-4 bg-cream p-4 text-sm">
               <p>{result.carrier ?? "India Post"} consignment number</p>
-              <p className="mt-1 font-display text-2xl tracking-wider">{result.consignment}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <p className="font-display text-2xl tracking-wider">{result.consignment}</p>
+                <CopyButton value={result.consignment} />
+              </div>
               {!result.isInternational && (
                 <a href={INDIA_POST_TRACKING_URL} target="_blank" rel="noopener noreferrer" className="btn-outline mt-4">
-                  Track on India Post
+                  Open India Post tracking
                 </a>
               )}
             </div>

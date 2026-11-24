@@ -45,4 +45,5 @@ export const STITCHING_NOTE =
 export const CUSTOMS_NOTE =
   "International orders: customs / import duties and taxes are paid by the customer.";
 
-export const INDIA_POST_TRACKING_URL = "https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx";
+/** India Post tracking: the "Consignment / Money Order Number" box on the India Post home page (old .aspx tracking URL no longer works). */
+export const INDIA_POST_TRACKING_URL = "https://www.indiapost.gov.in/#home-banner";

@@ -2,17 +2,18 @@ import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { whatsappLink } from "@/config/site";
 import { WordReveal } from "@/components/ui/WordReveal";
+import { cloudImage, PHOTO_WIDE } from "@/lib/images";
 
 /**
  * Final call-to-action: "Visit the boutique". Centred, minimal copy.
- * Background: public/Assets/banner-cta-hq.webp (sharpened 2x of "banner cta.jpg", client artwork).
+ * Background: amaris/site/banner-cta-hq on Cloudinary (local copy public/Assets/banner-cta-hq.webp).
  */
 export function VisitCta() {
   return (
     <section className="container-x pt-28" aria-labelledby="visit-title">
       <div data-reveal className="group relative isolate flex min-h-[520px] items-center justify-center overflow-hidden rounded-[3px] bg-[#1c0a0b] md:min-h-[600px]">
         <img
-          src="/Assets/banner-cta-hq.webp"
+          src={cloudImage("/Assets/banner-cta-hq.webp", PHOTO_WIDE)}
           alt=""
           aria-hidden
           loading="lazy"

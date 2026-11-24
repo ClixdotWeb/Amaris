@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { cloudImage, LOGO_WIDTH } from "@/lib/images";
+
+const LOGO_DARK = cloudImage("/Assets/logo-dark.png", LOGO_WIDTH);
+const LOGO_LIGHT = cloudImage("/Assets/logo-light.png", LOGO_WIDTH);
 
 /**
- * Brand logo (public/Assets/logo-dark.png and logo-light.png, cut out from the client's logo artwork).
+ * Brand logo (amaris/site/logo-dark and logo-light on Cloudinary; local copies in public/Assets/).
  * `light` = version for dark backgrounds (footer).
  * `swap`  = render both; CSS shows the light one when the header sits over the dark hero (globals.css).
  */
@@ -21,11 +25,11 @@ export function Logo({
     <Link href="/" className={`inline-flex shrink-0 ${swap ? "logo-swap" : ""}`} aria-label="Amaris Boutique home">
       {swap ? (
         <>
-          {img("/Assets/logo-dark.png", "logo-dark")}
-          {img("/Assets/logo-light.png", "logo-light")}
+          {img(LOGO_DARK, "logo-dark")}
+          {img(LOGO_LIGHT, "logo-light")}
         </>
       ) : (
-        img(light ? "/Assets/logo-light.png" : "/Assets/logo-dark.png")
+        img(light ? LOGO_LIGHT : LOGO_DARK)
       )}
     </Link>
   );

@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { cloudImage, PHOTO_WIDE } from "@/lib/images";
 
 /**
  * Page title banner used across the site (listings, search, cart, checkout, account, policies, contact).
- * Background: public/Assets/burgundy-wall.webp (panelled wall from the atelier banner photo).
+ * Background: amaris/site/burgundy-wall on Cloudinary (local copy public/Assets/burgundy-wall.webp).
  * Colours follow the hero / atelier banner: ivory text, rose-gold accents.
  */
 export function PageHeader({
@@ -18,7 +19,7 @@ export function PageHeader({
 }) {
   return (
     <header className="relative isolate overflow-hidden bg-maroon-dark">
-      <img src="/Assets/burgundy-wall.webp" alt="" aria-hidden className="absolute inset-0 -z-10 h-full w-full object-cover" />
+      <img src={cloudImage("/Assets/burgundy-wall.webp", PHOTO_WIDE)} alt="" aria-hidden className="absolute inset-0 -z-10 h-full w-full object-cover" />
       {/* Vignette: lifts the centre, deepens the edges */}
       <div
         aria-hidden

@@ -44,7 +44,9 @@ export async function sendDispatchEmail(order: OrderWithItems) {
   const text = [
     `Your order ${order.order_number} has been dispatched via ${order.carrier ?? "India Post"}.`,
     `Consignment number: ${order.consignment_number}`,
-    order.is_international ? "" : `Track it here: ${INDIA_POST_TRACKING_URL}`,
+    order.is_international
+      ? ""
+      : `Track it on India Post: open ${INDIA_POST_TRACKING_URL} , enter your Consignment Number and the Captcha Code, then click Search.`,
     "",
     `${site.name} · ${site.phones[0]}`,
   ].join("\n");
