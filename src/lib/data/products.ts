@@ -115,14 +115,24 @@ export async function getProductsByIds(ids: string[]): Promise<ProductWithRelati
   return (data ?? []) as unknown as ProductWithRelations[];
 }
 
-/** Is this item in stock for the requested amount? */
-export function isAvailable(p: ProductWithRelations, opts: { size?: string; quantity: number; lengthMetres?: number }) {
+/**
+ * Is this item in stock for the requested amount? Variants can be per size, per colour or per size × colour
+ * (variant size "" = no size, colour null = no colour).
+ */
+export function isAvailable(
+  p: ProductWithRelations,
+  opts: { size?: string; colour?: string; quantity: number; lengthMetres?: number },
+) {
   if (!p.is_active) return false;
   if (p.is_preorder || p.product_type === "custom_made") return true; // made to order
-  if (p.product_type === "running_material") return p.stock_qty >= (opts.lengthMetres ?? 0) * opts.quantity;
-  if (opts.size && p.variants.length) {
-    const v = p.variants.find((x) => x.size === opts.size);
-    return !!v && v.stock_qty >= opts.quantity;
+  const need = p.product_type === "running_material" ? (opts.lengthMetres ?? 0) * opts.quantity : opts.quantity;
+  if (p.variants.length) {
+    const bySize = p.variants.some((v) => v.size);
+    const byColour = p.variants.some((v) => v.colour);
+    if ((bySize && opts.size) || (byColour && opts.colour)) {
+      const v = p.variants.find((x) => (!bySize || x.size === opts.size) && (!byColour || (x.colour ?? null) === (opts.colour ?? null)));
+      return !!v && v.stock_qty >= need;
+    }
   }
-  return p.stock_qty >= opts.quantity;
+  return p.stock_qty >= need;
 }

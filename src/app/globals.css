@@ -21,6 +21,20 @@
   --color-gold-light: #eedccf;
   --color-sale: #b3261e;
   --color-success: #2f6b3b;
+  /* Added for the admin dashboard (docs/ADMIN_UI_GUIDE.md §9). New names only: the storefront is unchanged. */
+  --color-warning: #8a5a00; /* low stock, awaiting payment, due soon — 5.9:1 on white */
+  --color-warning-light: #fbf3e0;
+  --color-sand-strong: #968474; /* form-control borders in the admin — 3.6:1 on white */
+
+  --radius-ui: 3px; /* rounded-ui: buttons, inputs, cards, badges (same as the site's rounded-[3px]) */
+  --radius-media: 6px; /* rounded-media: photos (same as product cards) */
+  --radius-card: 10px; /* rounded-card: admin cards and panels (softer than the shop, by request) */
+  --radius-control: 6px; /* admin inputs, selects and buttons */
+  --shadow-pop: 0 24px 48px -24px rgb(43 42 44 / 0.35); /* popovers, dialogs, toasts */
+  --shadow-bar: 0 10px 30px -18px rgb(43 42 44 / 0.35); /* sticky bars */
+  --shadow-card: 0 1px 2px rgb(43 42 44 / 0.04), 0 8px 24px -16px rgb(43 42 44 / 0.18); /* admin cards at rest */
+  --shadow-lift: 0 2px 4px rgb(43 42 44 / 0.04), 0 22px 44px -22px rgb(43 42 44 / 0.32); /* admin cards on hover */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
   --font-display: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-jost), system-ui, sans-serif;
@@ -148,10 +162,59 @@
   .table-amaris th, .admin-area th { text-align: left; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-sand); }
   .table-amaris td, .admin-area td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-sand); vertical-align: top; }
   .table-amaris a, .admin-area td a { color: var(--color-maroon); text-decoration: underline; text-underline-offset: 3px; }
-  /* Admin: unstyled forms/buttons get sensible defaults */
-  .admin-area fieldset { background: #fff; border: 1px solid var(--color-sand); padding: 1.25rem; margin-bottom: 1rem; display: grid; gap: 0.75rem; }
-  .admin-area button[type="submit"] { border-radius: 3px; background: var(--color-maroon); color: #fff; padding: 0.6rem 1.2rem; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; }
-  .admin-area nav a { margin-right: 0.75rem; font-size: 0.85rem; }
+
+  /* ───────────── Admin dashboard (docs/ADMIN_UI_GUIDE.md) ───────────── */
+  .btn-danger {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 1.75rem; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    border: 1px solid transparent; border-radius: var(--radius-ui);
+    background: var(--color-sale); color: #fff; transition: background-color 0.2s;
+  }
+  .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--color-sale) 80%, black); }
+  .btn-sm { padding: 0.55rem 1rem; font-size: 0.72rem; letter-spacing: 0.14em; }
+  /* Big figures (overview totals): Jost like the text beside them, light, with even (lining) same-width digits */
+  .stat-number { font-family: var(--font-sans); font-weight: 300; letter-spacing: -0.01em; font-variant-numeric: lining-nums tabular-nums; }
+  /* Numbers inside admin headings (e.g. "SC 11113") sit on the line instead of rising and falling */
+  .admin-area h1, .admin-area h2 { font-variant-numeric: lining-nums; }
+
+  /* Admin: softer corners than the shop (cards 10px, controls 6px), stronger control borders */
+  .admin-area .card { border-radius: var(--radius-card); border-color: color-mix(in srgb, var(--color-sand) 75%, transparent); box-shadow: var(--shadow-card); }
+  .admin-area a.card, .admin-area .card-hover { transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft), border-color 0.3s; }
+  .admin-area a.card:hover, .admin-area .card-hover:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+  .admin-area .btn-primary, .admin-area .btn-outline, .admin-area .btn-light, .admin-area .btn-danger, .admin-area .chip { border-radius: var(--radius-control); }
+  .admin-area input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+  .admin-area select,
+  .admin-area textarea { border-color: var(--color-sand-strong); border-radius: var(--radius-control); padding: 0.6rem 0.85rem; }
+  .admin-area input:hover:not(:focus), .admin-area select:hover:not(:focus), .admin-area textarea:hover:not(:focus) { border-color: var(--color-muted); }
+  .admin-area input:focus, .admin-area select:focus, .admin-area textarea:focus { border-color: var(--color-maroon); }
+  .admin-area :focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
+  .admin-area input:focus-visible, .admin-area select:focus-visible, .admin-area textarea:focus-visible { outline: none; }
+
+  /* Data table: a normal table from lg (1024px) up; below that each row becomes a card (cells show their column name) */
+  @media (max-width: 1023px) {
+    .data-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+    .data-table tr { border-bottom: 1px solid var(--color-sand); padding: 0.75rem 1rem; }
+    .data-table td { border: 0 !important; padding: 0.25rem 0 !important; display: flex; gap: 1rem; justify-content: space-between; text-align: right; }
+    .data-table td::before { content: attr(data-label); color: var(--color-muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: left; flex-shrink: 0; }
+    .data-table td[data-label=""]::before { content: none; }
+    /* first column (product, order no., name…) leads the card, without a label */
+    .data-table td:first-child { justify-content: flex-start; text-align: left; padding-bottom: 0.5rem !important; }
+    .data-table td:first-child::before { content: none; }
+  }
+  @media (min-width: 1024px) { .data-table td { vertical-align: middle; } }
+  @media (min-width: 1024px) {
+    /* Rows as separate soft, rounded rows with space between (no lines) */
+    .admin-area .data-table { border-collapse: separate; border-spacing: 0 8px; background: transparent; }
+    .admin-area .data-table thead th { background: transparent; border: 0; padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .admin-area .data-table tbody td { background: color-mix(in srgb, var(--color-cream) 38%, white); border: 0; padding-top: 0.95rem; padding-bottom: 0.95rem; transition: background-color 0.2s; }
+    .admin-area .data-table tbody td:first-child { border-radius: 12px 0 0 12px; }
+    .admin-area .data-table tbody td:last-child { border-radius: 0 12px 12px 0; }
+    .admin-area .data-table tbody tr:hover td { background: color-mix(in srgb, var(--color-cream) 75%, white); }
+    .admin-area .data-table tbody tr:hover { background: transparent; }
+  }
+  .data-table tbody tr { transition: background-color 0.15s; }
+  .data-table tbody tr:hover { background: color-mix(in srgb, var(--color-cream) 60%, transparent); }
 }
 
 @utility no-scrollbar {
@@ -263,5 +326,69 @@ body::before {
   background: url("https://res.cloudinary.com/slzv1rui/image/upload/f_auto,q_auto/amaris/site/damask-white") 0 0 / calc(var(--pattern-size) * 2) auto repeat;
   opacity: var(--pattern-opacity);
 }
-/* Admin panel stays plain */
+/* Admin: plain background (no shop wallpaper); a soft cream page so the white sections stand out */
 body:has(.admin-area)::before { display: none; }
+:root { --admin-bg: color-mix(in srgb, var(--color-cream) 36%, var(--color-ivory)); }
+body:has(.admin-area) { background: var(--admin-bg); }
+
+/* One dropdown look for the whole dashboard (Select lists, profile menu): white rounded panel,
+   roomy rows, cream highlight, selected row in burgundy with a tick. */
+.dropdown-panel {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-sand) 70%, transparent);
+  border-radius: 16px;
+  padding: 0.5rem;
+  box-shadow: 0 18px 40px -18px rgb(58 20 26 / 0.28), 0 2px 6px -2px rgb(58 20 26 / 0.06);
+}
+.dropdown-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  width: 100%; border-radius: 10px; padding: 0.7rem 1rem;
+  font-size: 0.95rem; color: var(--color-ink); text-align: left; white-space: nowrap;
+  cursor: pointer; transition: background-color 0.15s, color 0.15s;
+}
+.dropdown-item:hover, .dropdown-item[data-active="true"] { background: color-mix(in srgb, var(--color-cream) 85%, white); }
+.dropdown-item[aria-selected="true"] { color: var(--color-maroon); font-weight: 500; }
+.dropdown-item[aria-disabled="true"] { cursor: not-allowed; opacity: 0.4; background: transparent; }
+
+/* Overview cards: a notch cut out of the bottom-right corner (truly transparent, so the shadow follows it),
+   with a rounded inner corner and rounded card corners either side. The arrow button sits in the notch.
+   --n: notch size, --r: corner radius. Layers, all added together:
+   top block, left block, the strip above the notch, the strip left of it, the rounded inner corner,
+   and the two rounded outer corners. */
+.tile-shape {
+  --n: 58px; --r: 20px;
+  --tile-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--n) - var(--r) + 1px) no-repeat,
+    linear-gradient(#000 0 0) left / calc(100% - var(--n) - var(--r) + 1px) 100% no-repeat,
+    linear-gradient(#000 0 0) right calc(var(--r) - 1px) bottom var(--n) / calc(var(--n) + 1px) var(--r) no-repeat,
+    linear-gradient(#000 0 0) right var(--n) bottom calc(var(--r) - 1px) / var(--r) calc(var(--n) - var(--r) + 1px) no-repeat,
+    radial-gradient(circle at 100% 100%, #0000 var(--r), #000 calc(var(--r) + 0.5px)) right calc(var(--n) - var(--r)) bottom calc(var(--n) - var(--r)) / var(--r) var(--r) no-repeat,
+    radial-gradient(circle at 0 0, #000 var(--r), #0000 calc(var(--r) + 0.5px)) right 0 bottom var(--n) / var(--r) var(--r) no-repeat,
+    radial-gradient(circle at 0 0, #000 var(--r), #0000 calc(var(--r) + 0.5px)) right var(--n) bottom 0 / var(--r) var(--r) no-repeat;
+  -webkit-mask: var(--tile-mask);
+  mask: var(--tile-mask);
+}
+.tile-shadow { filter: drop-shadow(0 1px 1px rgb(58 20 26 / 0.05)) drop-shadow(0 12px 22px rgb(58 20 26 / 0.06)); }
+
+/* Admin page entrance: sections rise in turn (off for reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+  /* "backwards": hidden before it starts, but no transform left afterwards (so dropdowns and menus can sit above later sections) */
+  .admin-enter > * { animation: fade-up 0.7s var(--ease-soft) backwards; }
+  .admin-enter > *:nth-child(2) { animation-delay: 60ms; }
+  .admin-enter > *:nth-child(3) { animation-delay: 120ms; }
+  .admin-enter > *:nth-child(4) { animation-delay: 180ms; }
+  .admin-enter > *:nth-child(5) { animation-delay: 240ms; }
+  .admin-enter > *:nth-child(n + 6) { animation-delay: 300ms; }
+}
+
+/* Admin sidebar: the current page as a raised, soft (neumorphic) gold-light button on the burgundy panel */
+.neu-pill {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-gold-light) 55%, white), var(--color-gold-light) 55%, color-mix(in srgb, var(--color-gold-light) 88%, var(--color-gold)));
+  box-shadow:
+    6px 6px 14px rgb(20 4 6 / 0.55),          /* soft dark shadow, bottom-right */
+    -4px -4px 12px rgb(255 255 255 / 0.07),   /* faint light glow, top-left */
+    inset 1.5px 1.5px 1px rgb(255 255 255 / 0.75),        /* light inner edge */
+    inset -2px -2px 5px color-mix(in srgb, var(--color-gold) 35%, transparent); /* shaded inner edge */
+}
+
+

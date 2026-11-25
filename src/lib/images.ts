@@ -18,6 +18,11 @@ export function cloudImage(localPath: string, width?: number) {
       ? localPath.replace(/^\/Assets\//, "amaris/")
       : localPath.replace(/^\/Assets\//, "amaris/site/")
   ).replace(/\.\w+$/, "");
+  return cloudinaryUrl(publicId, width);
+}
+
+/** Cloudinary URL for a public ID (e.g. a photo uploaded in the admin), optionally limited to a width. */
+export function cloudinaryUrl(publicId: string, width?: number) {
   const size = width ? `,c_limit,w_${width}` : "";
   return `https://res.cloudinary.com/${CLOUD}/image/upload/f_auto,q_auto${size}/${publicId}`;
 }

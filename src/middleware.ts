@@ -1,15 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { USE_MOCK } from "@/lib/data/mode";
+import { ADMIN_COOKIE, verifySessionToken } from "@/lib/admin/session";
+
+const isAdminPath = (p: string) => p === "/admin" || p.startsWith("/admin/") || p.startsWith("/api/admin/");
+
+/**
+ * Admin area: needs a valid admin session (first check; every admin page, action and route checks again on the server).
+ * Not cached, not indexed.
+ */
+async function adminGate(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const res =
+    path === "/admin/login" || (await verifySessionToken(request.cookies.get(ADMIN_COOKIE)?.value))
+      ? NextResponse.next()
+      : path.startsWith("/api/")
+        ? NextResponse.json({ error: "Not signed in." }, { status: 401 })
+        : NextResponse.redirect(new URL(`/admin/login?next=${encodeURIComponent(path)}`, request.url));
+  res.headers.set("Cache-Control", "no-store");
+  res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return res;
+}
 
 export async function middleware(request: NextRequest) {
-  if (USE_MOCK) {
-    // Preview mode: no auth backend. Admin needs the database, so show a notice instead.
-    const path = request.nextUrl.pathname;
-    if (path === "/admin" || path.startsWith("/admin/"))
-      return NextResponse.rewrite(new URL("/admin-preview", request.url));
-    return NextResponse.next();
-  }
+  if (isAdminPath(request.nextUrl.pathname)) return adminGate(request);
+  if (USE_MOCK) return NextResponse.next(); // preview mode: no customer login backend
   return updateSession(request);
 }
 

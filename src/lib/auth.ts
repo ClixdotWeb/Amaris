@@ -33,10 +33,4 @@ export async function getProfile(): Promise<Profile | null> {
   return data;
 }
 
-/** Use at the top of every admin page / server action. */
-export async function requireAdmin() {
-  const user = await requireUser("/admin");
-  const profile = await getProfile();
-  if (!profile?.is_admin) redirect("/");
-  return user;
-}
+// Admin login and checks: src/lib/admin/guard.ts (requireAdmin)

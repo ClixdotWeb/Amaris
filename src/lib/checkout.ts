@@ -65,7 +65,7 @@ export async function priceCart(input: CheckoutInput) {
       }
     }
 
-    if (!isAvailable(p, { size: size ?? undefined, quantity: line.quantity, lengthMetres: lengthMetres ?? undefined }))
+    if (!isAvailable(p, { size: size ?? undefined, colour: colour ?? undefined, quantity: line.quantity, lengthMetres: lengthMetres ?? undefined }))
       throw new CheckoutError(`${p.name} does not have enough stock.`);
 
     const t = lineTotal({

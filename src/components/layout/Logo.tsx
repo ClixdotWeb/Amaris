@@ -13,16 +13,21 @@ export function Logo({
   light = false,
   swap = false,
   className = "h-[58px] md:h-[76px]",
+  href = "/",
+  label = "Amaris Boutique home",
 }: {
   light?: boolean;
   swap?: boolean;
   className?: string;
+  /** Where the logo links to (the admin links to its dashboard). */
+  href?: string;
+  label?: string;
 }) {
   const img = (src: string, cls = "") => (
     <img src={src} alt="Amaris Boutique" width={556} height={435} className={`w-auto ${className} ${cls}`} />
   );
   return (
-    <Link href="/" className={`inline-flex shrink-0 ${swap ? "logo-swap" : ""}`} aria-label="Amaris Boutique home">
+    <Link href={href} className={`inline-flex shrink-0 ${swap ? "logo-swap" : ""}`} aria-label={label}>
       {swap ? (
         <>
           {img(LOGO_DARK, "logo-dark")}

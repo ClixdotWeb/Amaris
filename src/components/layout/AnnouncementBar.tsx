@@ -1,16 +1,6 @@
 import { formatINR } from "@/lib/format";
 import { getSettings } from "@/lib/data/settings";
-
-/** Small lotus mark used as the separator (echoes the logo). */
-function Lotus() {
-  return (
-    <svg viewBox="0 0 24 16" width="22" height="15" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden className="shrink-0">
-      <path d="M12 1c2.2 2.4 2.2 7.6 0 12-2.2-4.4-2.2-9.6 0-12Z" />
-      <path d="M12 13c-1.6-3.6-4.6-6-8-6.4.4 3.8 3.6 6.4 8 6.4Z" />
-      <path d="M12 13c1.6-3.6 4.6-6 8-6.4-.4 3.8-3.6 6.4-8 6.4Z" />
-    </svg>
-  );
-}
+import { Lotus } from "@/components/ui/Lotus";
 
 /** Infinite scrolling service marquee, shown under the home hero. Pauses on hover. */
 export async function AnnouncementBar() {

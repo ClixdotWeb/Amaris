@@ -41,14 +41,27 @@ export interface ProductImage {
   thumb_url?: string | null;
   alt: string | null;
   sort_order: number;
+  /** Cloudinary public ID for photos uploaded in the admin (null for older photos). */
+  public_id?: string | null;
 }
 
+/**
+ * One stock line of a product: a size, a colour, or a size × colour combination.
+ * size "" = no size (one size); colour null/undefined = no colour. Stock in pieces (metres for running material).
+ */
 export interface ProductVariant {
   id: string;
   product_id: string;
   size: string;
+  colour?: string | null;
   stock_qty: number;
+  sku?: string | null;
+  /** Overrides the product price for this variant. Paise. */
+  price?: number | null;
 }
+
+/** published = live on the store; draft = hidden (being prepared or paused); archived = retired, kept for records. */
+export type ProductStatus = "draft" | "published" | "archived";
 
 /** A colour the product comes in. hex (and hex2 for two-tone) is sampled from that colour's photo. */
 export interface ProductColour {
@@ -80,7 +93,21 @@ export interface Product {
   is_hot_deal: boolean;
   /** Shown in the Premium collection. */
   is_premium: boolean;
+  /** Live on the store. Kept in step with status/deleted_at (= status "published" and not deleted). */
   is_active: boolean;
+  /** Admin fields (optional so the storefront's preview data still type-checks). */
+  status?: ProductStatus;
+  /** Soft delete: hidden everywhere, restorable, old orders keep the link. */
+  deleted_at?: string | null;
+  /** Product code, e.g. "SC 11113". */
+  sku?: string | null;
+  tags?: string[];
+  meta_title?: string | null;
+  meta_description?: string | null;
+  /** Sale price (paise) while the sale is on; optional start/end (ISO). See saleActive() in lib/pricing.ts. */
+  sale_price?: number | null;
+  sale_starts_at?: string | null;
+  sale_ends_at?: string | null;
   /** Unstitched only: offer the stitching add-on. */
   stitching_available: boolean;
   /** Overrides the default stitching charge from settings. Paise. */
@@ -147,6 +174,8 @@ export interface Order {
   policies_accepted_at: string;
   customer_notes: string | null;
   admin_notes: string | null;
+  /** Set when a cancelled / refunded order's stock was put back, so it only happens once. */
+  stock_restored_at?: string | null;
   created_at: string;
 }
 
@@ -187,4 +216,32 @@ export interface ShopSettings {
   /** International flat rates by ISO country code. Countries not listed cannot check out. Paise. */
   international_rates: Record<string, number>;
   cod_enabled: boolean;
+}
+
+/* ───────────── Admin dashboard ───────────── */
+
+/** An admin account (the client's staff who can use the dashboard). One role: admin. */
+export interface AdminAccount {
+  id: string;
+  email: string;
+  full_name: string;
+  created_at: string;
+  /** Email of the admin who added this account; null for the first admin. */
+  created_by: string | null;
+  last_login_at: string | null;
+}
+
+/** One line in the activity log: who changed what, and when. Never edited or deleted. */
+export interface ActivityEntry {
+  id: string;
+  actor_email: string | null;
+  /** e.g. "product.update", "order.status", "admin.add" */
+  action: string;
+  entity_type: "product" | "order" | "settings" | "admin" | "session";
+  entity_id: string | null;
+  summary: string;
+  /** Changed fields: { field: [old, new] } */
+  diff: Record<string, [unknown, unknown]> | null;
+  ip: string | null;
+  created_at: string;
 }

@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED = ["/account", "/checkout", "/admin"];
+// /admin has its own login (src/lib/admin/), checked in src/middleware.ts
+const PROTECTED = ["/account", "/checkout"];
 
 /** Refreshes the Supabase session cookie and redirects logged-out users away from protected pages. */
 export async function updateSession(request: NextRequest) {
@@ -34,6 +35,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin role is checked again in src/app/admin/layout.tsx (requireAdmin).
   return response;
 }

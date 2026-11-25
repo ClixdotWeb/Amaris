@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Product photos (1.2 GB) live on this computer and are uploaded to Cloudinary, not stored in git
 /public/Assets/products/
+
+# Local development store for the admin dashboard (test data, re-created with npm run dev:reset)
+/.data/

@@ -36,9 +36,10 @@ export function SizeChart() {
           </tbody>
         </table>
         <p>Note: {SIZE_CHART.note}</p>
-        <form method="dialog">
-          <button>Close</button>
-        </form>
+        {/* Not <form method="dialog">: this sits inside the add-to-cart form, and forms can't nest */}
+        <button type="button" onClick={() => ref.current?.close()}>
+          Close
+        </button>
       </dialog>
     </>
   );

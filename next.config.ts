@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  experimental: {
-    // Admin product form uploads images through a Server Action (default limit is 1 MB)
-    serverActions: { bodySizeLimit: "20mb" },
-  },
-};
+// Admin photos upload straight from the browser to Cloudinary, so Server Actions keep the default 1 MB body limit.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

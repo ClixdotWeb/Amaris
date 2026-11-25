@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:reset": "node -e \"require('fs').rmSync('.data/dev-store.json',{force:true});console.log('Dev store cleared. It is re-created with sample data on the next admin page load.')\"",
+    "check:admin": "node scripts/check-admin-guards.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

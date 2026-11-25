@@ -27,14 +27,19 @@ STOREFRONT  (src/app/(shop)/ — shares Header + Footer)
 /contact                       Phone, WhatsApp, email, Instagram, address, map
 /policies/return-refund | shipping | privacy | terms
 
-ADMIN  (src/app/admin/ — own layout, is_admin required)
-/admin                         Dashboard: orders to dispatch, today's sales, low stock
-/admin/orders[?status=]        Order list + status filter
-/admin/orders/[id]             Detail, enter consignment no. → mark dispatched → email customer
-/admin/products                Product list + search/filter
+ADMIN  (src/app/admin/ — plan: docs/ADMIN_DASHBOARD_PLAN.md)
+/admin/login                   Admin sign in (dev: DEV_ADMIN_EMAIL / DEV_ADMIN_PASSWORD in .env.local)
+(panel)/ — every page below needs an admin session (middleware + requireAdmin in each page/action)
+/admin                         Dashboard: orders to dispatch, today's sales, low stock (per size)
+/admin/orders[?status=&page=]  Order list + status filter + pages
+/admin/orders/[id]             Detail, consignment no. → dispatched → email; status changes (only allowed moves), stock back on cancel
+/admin/products                List/grid, search (name/code/tag), filters, sort, Live & Stitching switches, bulk actions, Deleted view
 /admin/products/new            Add product (fields change by category type)
-/admin/products/[id]           Edit, images, per-size stock, hide
+/admin/products/[id]           Edit: status (Live/Hidden/Archived), size × colour stock + SKU + price, sale price & dates, tags, SEO, photo order/main, duplicate, delete/restore
 /admin/settings                Stitching charge, domestic/international shipping
+/admin/users                   Admin accounts: add (starting password), remove (not yourself / not the last)
+/admin/activity                Activity log: who changed what; filter by admin, area, dates
+/admin/search?q=               Global search: orders (no., name, email, phone) + products
 
 API
 POST /api/checkout/create-order   Re-prices cart on server → pending order → Razorpay order
@@ -50,6 +55,7 @@ POST /auth/signout
 src/
   app/                 Routes (above)
   components/
+    admin/             AdminFrame (sidebar/top bar/drawer), Toaster, DataTable, ui (Card, StatCard, Field, Badge, states), ConfirmButton
     layout/            Header, Footer
     product/           ProductCard, ProductGrid, ProductListing, ProductGallery, SortSelect,
                        AddToCartForm (switches on product type), SizingPicker (size OR measurements),
@@ -65,7 +71,9 @@ src/
   lib/
     supabase/          client (browser), server (RLS + service-role), middleware (session + route guard)
     data/              products, orders, settings queries
-    auth.ts            getUser / requireUser / requireAdmin
+    auth.ts            getUser / requireUser (customers)
+    admin/             guard (requireAdmin), session cookie, accounts (scrypt), activity log, rate limit, order status rules, Cloudinary signing
+    db/                Admin data layer: types.ts (interface), dev/ (local store in .data/, seeded sample data), postgres/ later
     pricing.ts         lineTotal, dispatchTypeFor, stitchingChargeFor, shippingFeeFor (shared client+server)
     checkout.ts        priceCart(): server-side re-pricing + validation per product type
     validation.ts      zod schemas (cart line, sizing, address, checkout)

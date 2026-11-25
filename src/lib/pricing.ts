@@ -85,3 +85,31 @@ export function describeSizing(sizing: Sizing | null | undefined) {
   if (sizing.mode === "standard") return `Size ${sizing.size}`;
   return "Custom measurements";
 }
+
+/**
+ * Is the product's sale on right now? A sale price with no dates is always on; dates limit it.
+ * Used by the admin now and by the storefront/checkout once they read the dashboard's data.
+ */
+export function saleActive(
+  p: Pick<Product, "price" | "sale_price" | "sale_starts_at" | "sale_ends_at">,
+  now: Date = new Date(),
+) {
+  if (p.sale_price == null || p.sale_price >= p.price) return false;
+  if (p.sale_starts_at && now < new Date(p.sale_starts_at)) return false;
+  if (p.sale_ends_at && now > new Date(p.sale_ends_at)) return false;
+  return true;
+}
+
+/**
+ * What the customer pays per piece (or metre) and the struck-through price to show, if any.
+ * A variant price overrides the product price; the sale applies to the product price only.
+ */
+export function effectivePrice(
+  p: Pick<Product, "price" | "compare_at_price" | "sale_price" | "sale_starts_at" | "sale_ends_at">,
+  variant?: { price?: number | null } | null,
+  now: Date = new Date(),
+): { price: number; compareAt: number | null } {
+  if (variant?.price != null) return { price: variant.price, compareAt: null };
+  if (saleActive(p, now)) return { price: p.sale_price!, compareAt: p.price };
+  return { price: p.price, compareAt: p.compare_at_price != null && p.compare_at_price > p.price ? p.compare_at_price : null };
+}
