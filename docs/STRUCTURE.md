@@ -9,6 +9,7 @@ existing markup, or replace the JSX, without touching the logic in `lib/`, `conf
 STOREFRONT  (src/app/(shop)/ — shares Header + Footer)
 /                              Home: hero, categories, New Arrivals, Hot Deals, stitching promo, trust strip
 /new-arrivals                  Products flagged is_new_arrival
+/premium                       Products flagged is_premium
 /hot-deals                     Products flagged is_hot_deal
 /shop/[category]               8 categories (slugs in src/config/navigation.ts)
 /product/[slug]                Gallery + type-specific purchase options + dispatch note
@@ -75,6 +76,7 @@ src/
   middleware.ts
 supabase/
   migrations/0001_init.sql   Tables, enums, RLS, storage bucket, stock function
+  migrations/0003_premium.sql  products.is_premium (Premium collection)
   seed.sql                   Categories + placeholder settings
 ```
 

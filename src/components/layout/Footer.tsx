@@ -50,6 +50,7 @@ export function Footer() {
                 <Link className={link} href={`/shop/${c.slug}`}>{c.name.replace(" – Custom Made", "")}</Link>
               </li>
             ))}
+            <li><Link className={link} href="/premium">Premium</Link></li>
             <li><Link className={link} href="/hot-deals">Hot Deals</Link></li>
           </ul>
         </div>

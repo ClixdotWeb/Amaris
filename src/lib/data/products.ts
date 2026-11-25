@@ -9,6 +9,7 @@ function mockList(f: Filter) {
   if (f.categorySlug) list = list.filter((p) => p.category.slug === f.categorySlug);
   if (f.newArrivals) list = list.filter((p) => p.is_new_arrival);
   if (f.hotDeals) list = list.filter((p) => p.is_hot_deal);
+  if (f.premium) list = list.filter((p) => p.is_premium);
   if (f.query) {
     const q = f.query.toLowerCase();
     list = list.filter((p) => p.name.toLowerCase().includes(q) || p.category.name.toLowerCase().includes(q));
@@ -42,6 +43,7 @@ type Filter = {
   query?: string;
   newArrivals?: boolean;
   hotDeals?: boolean;
+  premium?: boolean;
   sort?: "newest" | "price_asc" | "price_desc";
   limit?: number;
   offset?: number;
@@ -59,6 +61,7 @@ export async function listProducts(f: Filter = {}): Promise<{ products: ProductW
   if (f.query) q = q.ilike("name", `%${f.query.replace(/[%_,()]/g, " ")}%`);
   if (f.newArrivals) q = q.eq("is_new_arrival", true);
   if (f.hotDeals) q = q.eq("is_hot_deal", true);
+  if (f.premium) q = q.eq("is_premium", true);
 
   if (f.sort === "price_asc") q = q.order("price", { ascending: true });
   else if (f.sort === "price_desc") q = q.order("price", { ascending: false });

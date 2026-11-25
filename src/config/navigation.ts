@@ -15,7 +15,7 @@ export const categories: { slug: string; name: string; productType: ProductType 
   { slug: "kids-dresses", name: "Kids Dresses – Custom Made", productType: "custom_made" },
 ];
 
-/* ───────────── Header navigation (5 items; the logo links home) ───────────── */
+/* ───────────── Header navigation (6 items; the logo links home) ───────────── */
 
 export type NavLink = { label: string; href: string; tone?: "sale" };
 /** A link inside a group. `slug` = category slug, used to look up its thumbnail. */
@@ -46,6 +46,7 @@ export const headerNav: HeaderNavItem[] = [
     kind: "dropdown",
     children: [cat("running-material", "Running Material"), cat("home-linen", "Home Linen")],
   },
+  { label: "Premium", href: "/premium" },
   { label: "Hot Deals", href: "/hot-deals", tone: "sale" },
 ];
 

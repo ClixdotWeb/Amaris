@@ -171,7 +171,7 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
 
       {needsSizing && (
         <div className="space-y-3">
-          <SizingPicker sizes={customSizes} value={sizing} onChange={setSizing} />
+          <SizingPicker sizes={customSizes} value={sizing} onChange={setSizing} showSizeChart={!isKids} />
           <p className="flex gap-2 bg-gold-light/40 p-3 text-xs text-ink">
             <Info size={15} className="mt-px shrink-0 text-gold" />
             {STITCHING_NOTE}

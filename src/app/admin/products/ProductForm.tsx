@@ -106,6 +106,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
         <label><input type="checkbox" name="is_active" defaultChecked={product?.is_active ?? true} /> Live on the website</label>
         <label><input type="checkbox" name="is_new_arrival" defaultChecked={product?.is_new_arrival} /> New Arrival</label>
         <label><input type="checkbox" name="is_hot_deal" defaultChecked={product?.is_hot_deal} /> Hot Deal</label>
+        <label><input type="checkbox" name="is_premium" defaultChecked={product?.is_premium} /> Premium</label>
         <label><input type="checkbox" name="is_preorder" defaultChecked={product?.is_preorder} /> Pre-order (dispatch in 45–60 days)</label>
       </fieldset>
 

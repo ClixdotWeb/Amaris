@@ -17,6 +17,25 @@ export const DELIVERY_AFTER_DISPATCH = {
 
 export const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"] as const;
 
+/**
+ * Women's size chart (inches), from the client. Shown on the product page wherever a size is chosen
+ * for stitching (unstitched suits with stitching, frocks & kurtis). Not shown for kids.
+ * NOTE: L and XL look swapped in the client's chart (L is bigger than XL) — confirm with the client.
+ */
+export const SIZE_CHART = {
+  unit: "inches",
+  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+  rows: [
+    { label: "Chest", values: ["32", "34", "36", "41", "40", "43"] },
+    { label: "Waist", values: ["29", "31", "32", "37", "36", "41"] },
+    { label: "Hip", values: ["33", "35", "37", "43", "42", "46"] },
+    { label: "Shoulder", values: ["14½", "15", "15½", "16¼", "16", "16¾"] },
+    { label: "Sleeve length", values: ["16", "16", "16", "16", "16", "16"] },
+    { label: "Length", values: ["48", "48", "48", "48", "48", "48"] },
+  ],
+  note: "Our sizes are flexible — every size can be altered to the next or previous size in the size chart.",
+} as const;
+
 /** Kids sizes (by age). TODO: confirm with the client's size chart. */
 export const KIDS_SIZES = ["1-2Y", "2-3Y", "3-4Y", "4-5Y", "5-6Y", "6-7Y", "7-8Y", "8-9Y", "9-10Y"] as const;
 

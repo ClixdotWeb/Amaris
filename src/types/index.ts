@@ -78,6 +78,8 @@ export interface Product {
   is_preorder: boolean;
   is_new_arrival: boolean;
   is_hot_deal: boolean;
+  /** Shown in the Premium collection. */
+  is_premium: boolean;
   is_active: boolean;
   /** Unstitched only: offer the stitching add-on. */
   stitching_available: boolean;

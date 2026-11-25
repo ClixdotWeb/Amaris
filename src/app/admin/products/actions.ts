@@ -22,6 +22,7 @@ const productSchema = z.object({
   is_preorder: bool,
   is_new_arrival: bool,
   is_hot_deal: bool,
+  is_premium: bool,
   is_active: bool,
   stitching_available: bool,
   stitching_charge: optNum, // ₹
@@ -66,6 +67,7 @@ export async function saveProduct(_: ProductFormState, form: FormData): Promise<
     is_preorder: v.is_preorder,
     is_new_arrival: v.is_new_arrival,
     is_hot_deal: v.is_hot_deal,
+    is_premium: v.is_premium,
     is_active: v.is_active,
     stitching_available: category.product_type === "unstitched" && v.stitching_available,
     stitching_charge: v.stitching_charge != null ? rupeesToPaise(v.stitching_charge) : null,

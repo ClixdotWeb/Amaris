@@ -11,7 +11,7 @@ export default async function AdminProductsPage({
   const supabase = await createClient();
   let query = supabase
     .from("products")
-    .select("id, name, slug, price, stock_qty, is_active, is_new_arrival, is_hot_deal, is_preorder, category:categories!inner(slug, name)")
+    .select("id, name, slug, price, stock_qty, is_active, is_new_arrival, is_hot_deal, is_premium, is_preorder, category:categories!inner(slug, name)")
     .order("created_at", { ascending: false })
     .limit(200);
   if (q) query = query.ilike("name", `%${q}%`);
@@ -58,7 +58,7 @@ export default async function AdminProductsPage({
                 <td>{formatINR(p.price)}</td>
                 <td>{p.stock_qty}</td>
                 <td>
-                  {[p.is_new_arrival && "New", p.is_hot_deal && "Deal", p.is_preorder && "Pre-order"].filter(Boolean).join(", ")}
+                  {[p.is_new_arrival && "New", p.is_hot_deal && "Deal", p.is_premium && "Premium", p.is_preorder && "Pre-order"].filter(Boolean).join(", ")}
                 </td>
                 <td>{p.is_active ? "Live" : "Hidden"}</td>
               </tr>

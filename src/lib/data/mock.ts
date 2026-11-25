@@ -80,6 +80,7 @@ type CatalogItem = {
   tags: string[];
   isNew: boolean;
   isDeal: boolean;
+  isPremium?: boolean;
   available: boolean;
   created: string | null;
   description: string;
@@ -121,6 +122,7 @@ export const mockProducts: ProductWithRelations[] = (catalog as CatalogItem[]).m
     is_preorder: false,
     is_new_arrival: s.isNew,
     is_hot_deal: s.isDeal,
+    is_premium: s.isPremium ?? false,
     is_active: true,
     stitching_available: category.product_type === "unstitched",
     stitching_charge: null,

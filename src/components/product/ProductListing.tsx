@@ -36,7 +36,7 @@ export async function ProductListing({
   description?: string | null;
   basePath: string;
   searchParams: { sort?: string; page?: string; q?: string };
-  filter: { categorySlug?: string; newArrivals?: boolean; hotDeals?: boolean; query?: string };
+  filter: { categorySlug?: string; newArrivals?: boolean; hotDeals?: boolean; premium?: boolean; query?: string };
   hideHeader?: boolean;
 }) {
   const page = Math.max(1, Number(searchParams.page) || 1);
@@ -60,7 +60,7 @@ export async function ProductListing({
       {/* Category quick links */}
       <nav aria-label="Categories" className="border-b border-sand">
         <ul data-reveal-stagger className="no-scrollbar container-x flex gap-2 overflow-x-auto py-4">
-          {[{ slug: "", name: "New Arrivals", href: "/new-arrivals" }, ...categories.map((c) => ({ ...c, href: `/shop/${c.slug}` })), { slug: "", name: "Hot Deals", href: "/hot-deals" }].map(
+          {[{ slug: "", name: "New Arrivals", href: "/new-arrivals" }, ...categories.map((c) => ({ ...c, href: `/shop/${c.slug}` })), { slug: "", name: "Premium", href: "/premium" }, { slug: "", name: "Hot Deals", href: "/hot-deals" }].map(
             (c) => (
               <li key={c.href} className="shrink-0">
                 <Link
