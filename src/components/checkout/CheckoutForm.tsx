@@ -1,16 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { checkCoupon } from "@/app/(shop)/cart/actions";
+import { DiscountLine } from "@/components/cart/CouponBox";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { Lock, Info } from "lucide-react";
-import { useCart } from "@/components/cart/CartProvider";
+import { useCheckoutItems } from "./useCheckoutItems";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { AddressFields } from "./AddressFields";
 import { formatINR } from "@/lib/format";
 import { shippingFeeFor } from "@/lib/pricing";
 import { CUSTOMS_NOTE, DELIVERY_AFTER_DISPATCH } from "@/config/shop";
 import { site } from "@/config/site";
+import { readCouponCode } from "@/components/cart/CouponBox";
 import type { Address, ShippingAddress, ShopSettings } from "@/types";
 
 declare global {
@@ -38,15 +41,21 @@ export function CheckoutForm({
   savedAddresses,
   settings,
   preview = false,
+  testPayments = false,
+  buyNow = false,
 }: {
   email: string;
   savedAddresses: Address[];
   settings: Pick<ShopSettings, "shipping_kerala_per_item" | "shipping_india_per_item" | "free_shipping_above" | "international_rates">;
   /** Preview mode (no database): everything renders but payment is disabled. */
   preview?: boolean;
+  /** Development: order saved in the dashboard store, then the test payment page */
+  testPayments?: boolean;
+  /** Checking out one item from "Buy now" (the cart is left alone) */
+  buyNow?: boolean;
 }) {
   const router = useRouter();
-  const { items, subtotal, stitchingTotal, clear, ready } = useCart();
+  const { items, subtotal, stitchingTotal, clear, ready } = useCheckoutItems(buyNow);
 
   const first = savedAddresses[0];
   const [address, setAddress] = useState<ShippingAddress>(first ? { ...first, line2: first.line2 ?? "" } : EMPTY);
@@ -58,11 +67,20 @@ export function CheckoutForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Coupon applied in the cart (checked again here; the server checks it once more when the order is saved)
+  const [discount, setDiscount] = useState<{ code: string; amount: number; label: string } | null>(null);
+  const itemsSubtotal = subtotal - stitchingTotal;
+  useEffect(() => {
+    const code = readCouponCode();
+    if (!code) return setDiscount(null);
+    checkCoupon(code, itemsSubtotal).then((r) => setDiscount(r.ok ? { code: r.code!, amount: r.discount, label: r.label } : null));
+  }, [itemsSubtotal]);
+
   if (!ready) return null;
   if (!items.length)
     return (
       <div className="py-20 text-center">
-        <p className="font-display text-3xl">Your cart is empty</p>
+        <p className="font-display text-3xl">{buyNow ? "Nothing to check out" : "Your cart is empty"}</p>
         <Link href="/" className="btn-primary mt-6">Continue shopping</Link>
       </div>
     );
@@ -72,19 +90,29 @@ export function CheckoutForm({
   const international = address.country !== "IN";
   // India: the rate depends on the PIN code (Kerala or not), so wait for it before adding shipping
   const needsPin = !international && !/^[1-9]\d{5}$/.test(address.pincode.trim()) && !address.state.trim();
-  const total = subtotal + (needsPin ? 0 : (shipping ?? 0));
+  const total = subtotal - (discount?.amount ?? 0) + (needsPin ? 0 : (shipping ?? 0));
   const hasMadeToOrder = items.some((i) => i.dispatch === "made_to_order");
 
   async function pay(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // Say exactly what is missing instead of a button that silently does nothing
+    const missing: string[] = [];
+    if (needsPin) missing.push("Enter your PIN code (or state) so we can work out delivery.");
+    else if (shipping === null) missing.push("Sorry, we don't deliver to this country yet. Please contact us.");
+    if (!confirmedAddress) missing.push("Tick the box to confirm your address, PIN code and phone number.");
+    if (!acceptedPolicies) missing.push("Tick the box to agree to the Terms, Return & Refund and Shipping policies.");
+    if (missing.length) {
+      setError(missing.join(" "));
+      return;
+    }
     if (preview) {
       setError("Preview mode: payments are disabled until the database and Razorpay keys are connected.");
       return;
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/checkout/create-order", {
+      const res = await fetch(testPayments ? "/api/checkout/test-order" : "/api/checkout/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -100,6 +128,7 @@ export function CheckoutForm({
           address,
           email,
           customerNotes: notes || undefined,
+          couponCode: readCouponCode() ?? undefined,
           acceptedPolicies,
           confirmedAddress,
           saveAddress,
@@ -107,6 +136,10 @@ export function CheckoutForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.issues?.[0]?.message ?? data.error ?? "Something went wrong.");
+      if (testPayments) {
+        router.push(`/checkout/pay/${data.orderId}${buyNow ? "?buy=now" : ""}`);
+        return;
+      }
 
       const rzp = new window.Razorpay({
         key: data.keyId,
@@ -180,10 +213,7 @@ export function CheckoutForm({
           )}
           <AddressFields
             value={address}
-            onChange={(a) => {
-              setAddress(a);
-              setConfirmedAddress(false);
-            }}
+            onChange={setAddress}
             countries={Object.keys(settings.international_rates)}
           />
           <div className="mt-5 space-y-4">
@@ -198,7 +228,7 @@ export function CheckoutForm({
 
             {/* Brief §6: ask the customer to verify address, PIN code and phone */}
             <label className="flex gap-3 border border-gold/60 bg-gold-light/30 p-4 text-sm">
-              <input type="checkbox" required checked={confirmedAddress} onChange={(e) => setConfirmedAddress(e.target.checked)} className="mt-0.5" />
+              <input type="checkbox" checked={confirmedAddress} onChange={(e) => setConfirmedAddress(e.target.checked)} className="mt-0.5" />
               <span>
                 I have checked my address, PIN code <strong>({address.pincode || "—"})</strong> and phone number{" "}
                 <strong>({address.phone || "—"})</strong>. Wrong details can delay delivery.
@@ -227,6 +257,7 @@ export function CheckoutForm({
                 <dd>{formatINR(stitchingTotal)}</dd>
               </div>
             )}
+            {discount && <DiscountLine discount={discount} />}
             <div className="flex justify-between">
               <dt className="text-muted">Shipping {international ? "(courier)" : "(India Post)"}</dt>
               <dd>{needsPin ? <span className="text-muted">Enter PIN code</span> : shipping === null ? "Not available" : shipping === 0 ? "Free" : formatINR(shipping)}</dd>
@@ -248,7 +279,7 @@ export function CheckoutForm({
 
           {/* Brief §8: required consent */}
           <label className="mt-5 flex gap-3 text-sm">
-            <input type="checkbox" required checked={acceptedPolicies} onChange={(e) => setAcceptedPolicies(e.target.checked)} className="mt-0.5" />
+            <input type="checkbox" checked={acceptedPolicies} onChange={(e) => setAcceptedPolicies(e.target.checked)} className="mt-0.5" />
             <span>
               I agree to the{" "}
               <Link href="/policies/terms" target="_blank" className="text-maroon underline">Terms</Link>,{" "}
@@ -259,9 +290,9 @@ export function CheckoutForm({
 
           {error && <p role="alert" className="mt-4 text-sm text-sale">{error}</p>}
 
-          <button type="submit" disabled={busy || shipping === null || needsPin || !acceptedPolicies || !confirmedAddress} className="btn-primary mt-5 w-full">
+          <button type="submit" disabled={busy} className="btn-primary mt-5 w-full">
             <Lock size={14} />
-            {busy ? "Processing…" : `Pay ${formatINR(total)}`}
+            {busy ? (testPayments ? "Saving your order…" : "Processing…") : testPayments ? "Continue to payment" : `Pay ${formatINR(total)}`}
           </button>
           <p className="mt-3 text-center text-xs text-muted">Secure payment by Razorpay · UPI, cards, net banking</p>
         </section>

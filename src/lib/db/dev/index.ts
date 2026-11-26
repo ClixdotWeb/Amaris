@@ -3,29 +3,10 @@ import { randomUUID } from "node:crypto";
 import type { AdminAccount, OrderWithItems, Product, ProductStatus, ProductVariant, ProductWithRelations } from "@/types";
 import { LOW_STOCK_THRESHOLD, type AdminDb, type AdminWithSecret, type LowStockRow, type Page, type ProductInput, type ProductSort } from "../types";
 import { mutateStore, readStore, type DevData } from "./store";
+import { extra } from "./extra";
+import { applyStatus, orderWithItems, paginate, statusOf, stockOf, variantLabel, withRelations } from "./helpers";
 
 const MAX_IMAGES = 15;
-
-function paginate<T>(all: T[], page = 1, pageSize = 25): Page<T> {
-  const p = Math.max(1, Math.floor(page));
-  return { rows: all.slice((p - 1) * pageSize, p * pageSize), total: all.length, page: p, pageSize };
-}
-
-/** Total stock: sum of variants when the product has them. */
-function stockOf(d: DevData, id: string, own: number) {
-  const vs = d.variants.filter((v) => v.product_id === id);
-  return vs.length ? vs.reduce((s, v) => s + v.stock_qty, 0) : own;
-}
-
-const statusOf = (p: Product): ProductStatus => p.status ?? (p.is_active ? "published" : "draft");
-
-/** Keeps the storefront's is_active flag in step with status + soft delete. */
-function applyStatus(p: Product, status: ProductStatus) {
-  p.status = status;
-  p.is_active = status === "published" && !p.deleted_at;
-}
-
-const variantLabel = (v: Pick<ProductVariant, "size" | "colour">) => [v.size, v.colour].filter(Boolean).join(" / ") || null;
 
 function productSorter(d: DevData, sort: ProductSort = "newest") {
   const by: Record<ProductSort, (a: Product, b: Product) => number> = {
@@ -38,23 +19,6 @@ function productSorter(d: DevData, sort: ProductSort = "newest") {
     stock_desc: (a, b) => stockOf(d, b.id, b.stock_qty) - stockOf(d, a.id, a.stock_qty),
   };
   return (a: Product, b: Product) => by[sort](a, b) || b.created_at.localeCompare(a.created_at);
-}
-
-function withRelations(d: DevData, id: string): ProductWithRelations | null {
-  const p = d.products.find((x) => x.id === id);
-  if (!p) return null;
-  const category = d.categories.find((c) => c.id === p.category_id)!;
-  return {
-    ...p,
-    category,
-    images: d.images.filter((i) => i.product_id === id).sort((a, b) => a.sort_order - b.sort_order),
-    variants: d.variants.filter((v) => v.product_id === id),
-  };
-}
-
-function orderWithItems(d: DevData, id: string): OrderWithItems | null {
-  const o = d.orders.find((x) => x.id === id);
-  return o ? { ...o, items: d.order_items.filter((i) => i.order_id === id) } : null;
 }
 
 /** Same rule as the SQL function decrement_stock_for_order, in reverse. Variants match on size and colour. */
@@ -85,13 +49,8 @@ function uniqueSlug(d: DevData, base: string, exceptId?: string) {
   return slug;
 }
 
-export const devDb: AdminDb = {
-  categories: {
-    async list() {
-      return [...readStore().categories].sort((a, b) => a.sort_order - b.sort_order);
-    },
-  },
-
+/** Products, orders, settings, admins and the activity log (Phases 0–2). The rest is in extra.ts. */
+const core: Omit<AdminDb, keyof typeof extra> = {
   products: {
     async list(f) {
       const d = readStore();
@@ -534,6 +493,8 @@ export const devDb: AdminDb = {
     },
   },
 };
+
+export const devDb: AdminDb = { ...core, ...extra };
 
 function publicAdmin(a: AdminWithSecret): AdminAccount {
   const { password_hash: _secret, ...rest } = a;

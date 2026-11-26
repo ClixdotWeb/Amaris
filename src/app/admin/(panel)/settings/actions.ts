@@ -29,6 +29,9 @@ const schema = z.object({
   shipping_india_per_item: rupeesField,
   free_shipping_above: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().nonnegative().max(10_000_000).nullable()),
   international_rates: z.string().max(2000).optional(),
+  cod_enabled: z.string().optional(),
+  cod_fee: rupeesField,
+  cod_max_order: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().positive().max(10_000_000).nullable()),
 });
 
 const LABELS: Record<string, string> = {
@@ -37,6 +40,9 @@ const LABELS: Record<string, string> = {
   shipping_india_per_item: "Rest of India shipping",
   free_shipping_above: "Free shipping above",
   international_rates: "International rates",
+  cod_enabled: "Cash on delivery",
+  cod_fee: "COD charge",
+  cod_max_order: "COD order limit",
 };
 
 export async function saveSettings(_: SettingsState, form: FormData): Promise<SettingsState> {
@@ -58,10 +64,12 @@ export async function saveSettings(_: SettingsState, form: FormData): Promise<Se
     shipping_india_per_item: rupeesToPaise(v.shipping_india_per_item),
     free_shipping_above: v.free_shipping_above != null ? rupeesToPaise(v.free_shipping_above) : null,
     international_rates: rates,
-    // COD is built in Phase 8; until then the stored value stays as it is
+    cod_enabled: v.cod_enabled === "on",
+    cod_fee: rupeesToPaise(v.cod_fee),
+    cod_max_order: v.cod_max_order != null ? rupeesToPaise(v.cod_max_order) : null,
   };
   await db.settings.save(data);
-  const diff = diffFields(current, data, ["default_stitching_charge", "shipping_kerala_per_item", "shipping_india_per_item", "free_shipping_above", "international_rates"]);
+  const diff = diffFields(current, data, ["default_stitching_charge", "shipping_kerala_per_item", "shipping_india_per_item", "free_shipping_above", "international_rates", "cod_enabled", "cod_fee", "cod_max_order"]);
   if (Object.keys(diff).length)
     await logActivity(me, { action: "settings.update", entity_type: "settings", summary: `Changed ${Object.keys(diff).map((k) => LABELS[k]).join(", ")}`, diff });
   revalidatePath("/admin/settings");

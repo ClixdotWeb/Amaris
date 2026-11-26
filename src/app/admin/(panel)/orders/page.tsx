@@ -31,15 +31,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         description="Search by order number, customer name, email or phone, or filter by status."
         toolbar={
       <div className="space-y-4">
-      <form role="search" className="relative flex max-w-xl gap-2">
+      <form role="search" className="relative flex w-full gap-2">
         {valid && <input type="hidden" name="status" value={valid} />}
         <label htmlFor="orders-q" className="sr-only">Search orders</label>
         <Search size={16} strokeWidth={1.5} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" aria-hidden />
         <input id="orders-q" name="q" type="search" defaultValue={query} placeholder="Order no., name, email or phone" className="!h-10 !border-sand-strong/60 !py-0 !pl-10 text-sm" />
-        <button type="submit" className="btn-outline btn-sm !h-10 shrink-0 !py-0">Search</button>
+        <button type="submit" className="btn-primary btn-sm !h-10 shrink-0 !px-6 !py-0">Search</button>
       </form>
 
       <FilterPills
+        stretch
         items={[
           { href: href(), label: "All", active: !valid },
           ...Object.entries(ORDER_STATUS_LABELS).map(([k, label]) => ({ href: href(k), label, active: valid === k })),
@@ -105,7 +106,17 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               cell: (o) =>
                 o.items.some((i) => i.dispatch_type === "made_to_order") ? <Badge tone="gold">45–60 days</Badge> : <Badge>48 hours</Badge>,
             },
-            { key: "total", header: "Total", align: "right", cell: (o) => <span className="stat-number text-[15px]">{formatINR(o.total)}</span> },
+            {
+              key: "total",
+              header: "Total",
+              align: "right",
+              cell: (o) => (
+                <span className="inline-flex flex-col items-end gap-1">
+                  <span className="stat-number text-[15px]">{formatINR(o.total)}</span>
+                  {o.payment_method === "cod" && <Badge tone="warning">COD</Badge>}
+                </span>
+              ),
+            },
             {
               key: "status",
               header: "Status",

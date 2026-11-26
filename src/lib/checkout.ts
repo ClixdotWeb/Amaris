@@ -2,6 +2,8 @@ import "server-only";
 import type { CheckoutInput } from "@/lib/validation";
 import { getProductsByIds, isAvailable } from "@/lib/data/products";
 import { getSettings } from "@/lib/data/settings";
+import { findCoupon } from "@/lib/data/coupons";
+import { couponDiscount } from "@/lib/coupons";
 import { dispatchTypeFor, lineTotal, shippingFeeFor, stitchingChargeFor } from "@/lib/pricing";
 import type { OrderItem } from "@/types";
 
@@ -97,6 +99,16 @@ export async function priceCart(input: CheckoutInput) {
 
   const stitchingTotal = items.reduce((s, i) => s + i.stitching_charge * i.quantity, 0);
   const subtotal = items.reduce((s, i) => s + i.line_total, 0) - stitchingTotal;
+  // Coupon: discount on the items only (not stitching or shipping), worked out again here
+  let discount = 0;
+  let couponCode: string | null = null;
+  if (input.couponCode) {
+    const coupon = await findCoupon(input.couponCode);
+    const check = couponDiscount(coupon, subtotal);
+    if (!check.ok) throw new CheckoutError(`Coupon ${input.couponCode.toUpperCase()}: ${check.error}`);
+    discount = check.discount;
+    couponCode = coupon!.code;
+  }
   const country = input.address.country;
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
   const shippingFee = shippingFeeFor(input.address, subtotal + stitchingTotal, itemCount, settings);
@@ -107,7 +119,9 @@ export async function priceCart(input: CheckoutInput) {
     subtotal,
     stitchingTotal,
     shippingFee,
-    total: subtotal + stitchingTotal + shippingFee,
+    discount,
+    couponCode,
+    total: subtotal - discount + stitchingTotal + shippingFee,
     isInternational: country !== "IN",
   };
 }

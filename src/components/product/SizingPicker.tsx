@@ -1,7 +1,7 @@
 "use client";
 import { MEASUREMENT_FIELDS, MEASUREMENT_UNIT } from "@/config/shop";
 import type { Measurements, Sizing } from "@/types";
-import { SizeChart } from "./SizeChart";
+import { SizeChart, type SizeChartView } from "./SizeChart";
 
 /**
  * Standard size OR manual measurements.
@@ -12,12 +12,15 @@ export function SizingPicker({
   value,
   onChange,
   showSizeChart = false,
+  chart = null,
 }: {
   sizes: readonly string[];
   value: Sizing | null;
   onChange: (s: Sizing | null) => void;
   /** Show the "Size chart" link (adult sizes only). */
   showSizeChart?: boolean;
+  /** The category's size chart (dashboard → Size guide); no link when there is none. */
+  chart?: SizeChartView | null;
 }) {
   const mode = value?.mode ?? "standard";
   const measurements: Measurements = value?.mode === "custom" ? value.measurements : {};
@@ -39,7 +42,7 @@ export function SizingPicker({
   return (
     <fieldset>
       <legend>Size</legend>
-      {showSizeChart && <SizeChart />}
+      {showSizeChart && chart && <SizeChart chart={chart} />}
       <div role="tablist" className="flex overflow-hidden rounded-[3px] border border-ink">
         {tab("standard", "Standard size")}
         {tab("custom", "My measurements")}

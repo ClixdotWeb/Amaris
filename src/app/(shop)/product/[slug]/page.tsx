@@ -12,6 +12,10 @@ import { AddToCartForm } from "@/components/product/AddToCartForm";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SectionHeading } from "@/components/home/SectionHeading";
 import { DELIVERY_AFTER_DISPATCH } from "@/config/shop";
+import { getSizeChart } from "@/lib/data/content";
+import { getReviews, REVIEWS_ENABLED } from "@/lib/data/reviews";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
+import { Stars } from "@/components/reviews/Stars";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -39,6 +43,8 @@ export default async function ProductPage({ params }: Props) {
   if (!product || !product.is_active) notFound();
 
   const stitchingCharge = stitchingChargeFor(product, product.category.slug, settings);
+  const [sizeChart, reviews] = await Promise.all([getSizeChart(product.category.slug), getReviews(product.id)]);
+  const average = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const related = (await listProducts({ categorySlug: product.category.slug, limit: 5 })).products
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
@@ -73,9 +79,14 @@ export default async function ProductPage({ params }: Props) {
               )}
             </div>
             <p className="mt-1 text-xs text-muted">MRP inclusive of all taxes. Shipping calculated at checkout.</p>
+            {reviews.length > 0 && (
+              <a href="#reviews" className="mt-3 inline-flex items-center gap-2 text-xs text-muted hover:text-maroon">
+                <Stars value={average} /> {average.toFixed(1)} · {reviews.length} review{reviews.length === 1 ? "" : "s"}
+              </a>
+            )}
 
             <div className="my-8 h-px bg-sand" />
-            <AddToCartForm product={product} stitchingCharge={stitchingCharge} />
+            <AddToCartForm product={product} stitchingCharge={stitchingCharge} sizeChart={sizeChart} />
 
             <div className="mt-10 border-t border-sand">
               {product.description && <Accordion title="Description" open>{product.description}</Accordion>}
@@ -103,6 +114,8 @@ export default async function ProductPage({ params }: Props) {
         </div>
         </ProductView>
       </div>
+
+      {REVIEWS_ENABLED && <ReviewsSection productId={product.id} reviews={reviews} />}
 
       {related.length > 0 && (
         <section className="container-x border-t border-sand pt-20">

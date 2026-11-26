@@ -33,15 +33,23 @@ function sign(params: Record<string, string | number>) {
   return sha1(str + env().secret);
 }
 
-export function uploadSignature() {
+/** Website pictures (hero slides, tiles, wallpaper) go next to the product folder: …/products → …/site */
+export const siteFolder = () => {
+  const f = env().folder;
+  return f.endsWith("/products") ? `${f.slice(0, -"/products".length)}/site` : `${f}-site`;
+};
+
+export function uploadSignature(kind: "products" | "site" = "products") {
   const e = env();
-  const params = { allowed_formats: UPLOAD_FORMATS.join(","), folder: e.folder, timestamp: Math.floor(Date.now() / 1000) };
+  const folder = kind === "site" ? siteFolder() : e.folder;
+  const params = { allowed_formats: UPLOAD_FORMATS.join(","), folder, timestamp: Math.floor(Date.now() / 1000) };
   return {
     url: `https://api.cloudinary.com/v1_1/${e.cloud}/image/upload`,
     apiKey: e.key,
     ...params,
     signature: sign(params),
     maxBytes: UPLOAD_MAX_BYTES,
+    cloud: e.cloud,
   };
 }
 

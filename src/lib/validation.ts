@@ -58,6 +58,8 @@ export const checkoutSchema = z.object({
   address: addressSchema,
   email: z.string().email(),
   customerNotes: z.string().max(1000).optional(),
+  /** Coupon from the cart; checkout works out the discount again from the code */
+  couponCode: z.string().trim().max(30).optional(),
   // Brief §8: must tick the policy box. §6: must confirm address / PIN / phone.
   acceptedPolicies: z.literal(true),
   confirmedAddress: z.literal(true),

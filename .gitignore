@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Local development store for the admin dashboard (test data, re-created with npm run dev:reset)
 /.data/
+
+# Fast local preview build (npm run preview)
+/.next-preview/

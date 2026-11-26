@@ -1,6 +1,6 @@
 # Amaris Boutique — Admin Dashboard Plan
 
-Status: **Approved 2026-11-25.** Phases 0–2 built (see §10). UI rules: docs/ADMIN_UI_GUIDE.md. Testing: no test frameworks (question B unanswered); each phase is checked with tsc, eslint and a scripted click-through.
+Status: **Approved 2026-11-25.** Phases 0–11 built on the development store (see §10, Build status). The Coolify Postgres move is next. UI rules: docs/ADMIN_UI_GUIDE.md. Testing: no test frameworks (question B unanswered); each phase is checked with tsc, eslint and a scripted click-through.
 Date: 2026-11-25
 
 ---
@@ -423,7 +423,7 @@ The dashboard is built and tested with **no database and no Supabase project**. 
 - **Local development store.** A JSON file at `.data/dev-store.json` (git-ignored), loaded into memory and written back after every change, so data survives restarts. It's seeded on first run from `catalog.json` (the 322 sample products, categories, colours, sizes) plus generated sample customers and orders (all statuses, COD and Razorpay, made-to-order lines with measurements), so every dashboard page has realistic data. `npm run dev:reset` re-seeds it. It refuses to start when `NODE_ENV=production`.
 - **Same rules in both backends.** Business rules (allowed status changes, stock restore on cancel, coupon checks, prices in paise) live in `src/lib/admin/` and `src/lib/pricing.ts`, not inside the backend, so they behave the same after the move.
 - **Login while building.** `src/lib/auth.ts` is the only place that knows the login system. In the dev backend, admin login uses `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD` from `.env.local` and a signed, http-only session cookie. Real customer accounts and the real admin login come with the Coolify move (recommended: Better Auth: email/password, banning, sessions in Postgres).
-- **Storefront.** It keeps using preview data exactly as today. Whether and when it reads from the dashboard's data is decided later (decision D).
+- **Storefront (decision D, 2026-11-26: connect it).** While building, the shop reads the dashboard's development store (`USE_DASHBOARD_STORE` in `src/lib/data/mode.ts`): products (sale prices applied), categories (order, names, photos, hidden), collections, size charts, home page content, reviews and settings. A production build without a database keeps the old preview data, because the dev store refuses to run in production.
 - **Outside services while building:**
   - Cloudinary: real uploads to a separate folder `amaris/dev/` (keys already in `.env.local`), so the image uploader is tested for real.
   - Razorpay refunds: simulated in the dev backend (stored as `status: simulated`); the real API call is wired with test keys at the move.
@@ -644,6 +644,26 @@ Reused: `zod`, `lucide-react`, Razorpay SDK (refunds), Tailwind. **Not adding no
 | — | **Later: move to Coolify Postgres** | separate plan once you say the dashboard is done | all |
 
 ---
+
+### Build status (2026-11-26)
+
+| Menu | Page(s) | Shop side |
+|---|---|---|
+| Dispatch | `/admin/dispatch` (ready / waiting on stitching / all), mark packed, consignment no. → dispatched + email, `/admin/print/labels` | — |
+| Stitching | `/admin/production`: made-to-order lines, due = order + 60 days, steps Not started → Cutting → Stitching → Ready, notes, `/admin/print/job-card/[id]` | Orders become "Ready to send" in Dispatch when every line is Ready |
+| Customers | `/admin/customers`, `/[id]`: orders, spend (paid only), notes, block / unblock | Block is stored; enforced at login/checkout after the move |
+| Inventory | `/admin/inventory`: every stock figure, Add / Remove / Set to with a reason; History tab | Stock is what the shop sells from |
+| Categories | `/admin/categories`: add, edit, order, cover photo, show/hide, remove when empty | Header menu, category circles, category pages |
+| Collections | `/admin/collections`, `/new`, `/[id]` with product picker and order | `/collections`, `/collections/[slug]`, header menu, home page rails |
+| Size guide | `/admin/sizes`: chart editor (sizes × measurements), linked categories | Size chart on product pages |
+| Coupons | `/admin/coupons`: % or ₹ off, minimum, cap, dates, use limit, on/off | Coupon box in the cart; checkout re-checks the code (`src/lib/coupons.ts`) |
+| Homepage | `/admin/content`: 3 hero slides, announcement messages, 2 promo tiles, featured collections | Home page + announcement band, with built-in fallbacks |
+| Reviews | `/admin/reviews`: waiting / approved / hidden, approve, hide, delete | Review list + form on product pages (new reviews wait for approval) |
+| Reports | `/admin/reports`: 7 d / 30 d / 90 d / 12 m or dates; revenue, orders, AOV, stitching; by day/week/month, product, category, size; CSV | — |
+
+**Waits for the database move:** customer accounts and checkout (Supabase today), so coupon use counts, order discounts (`orders.discount`, `orders.coupon_code`) and blocking at login are wired but only take effect then. Stock movements for sales/cancellations are recorded once orders are created in the new database.
+
+**Checks run:** tsc, eslint, `npm run check:admin`, every page requested signed in with the server log scanned for errors, a form-post round trip (dashboard change → shop shows it) for each section, and browser runs for the cart coupon and the stitching step.
 
 ## 11. Testing checklist
 

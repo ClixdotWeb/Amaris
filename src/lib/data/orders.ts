@@ -1,7 +1,8 @@
 import "server-only";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { OrderStatus, OrderWithItems } from "@/types";
-import { USE_MOCK } from "./mode";
+import { USE_DASHBOARD_STORE, USE_MOCK } from "./mode";
+import { db } from "@/lib/db";
 
 const ORDER_SELECT = "*, items:order_items(*)";
 
@@ -19,6 +20,7 @@ export async function listMyOrders(): Promise<OrderWithItems[]> {
 
 /** One order, visible to its owner or an admin (RLS). */
 export async function getOrder(id: string): Promise<OrderWithItems | null> {
+  if (USE_DASHBOARD_STORE) return /^[0-9a-f-]{36}$/.test(id) ? db.orders.get(id) : null;
   if (USE_MOCK) return null;
   const supabase = await createClient();
   const { data } = await supabase.from("orders").select(ORDER_SELECT).eq("id", id).maybeSingle();

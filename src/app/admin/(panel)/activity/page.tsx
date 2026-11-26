@@ -18,11 +18,21 @@ const TYPES: { value: ActivityEntry["entity_type"]; label: string; tone: BadgeTo
   { value: "settings", label: "Settings", tone: "neutral" },
   { value: "admin", label: "Admins", tone: "warning" },
   { value: "session", label: "Sign-ins", tone: "neutral" },
+  { value: "inventory", label: "Inventory", tone: "gold" },
+  { value: "category", label: "Categories", tone: "gold" },
+  { value: "collection", label: "Collections", tone: "gold" },
+  { value: "size_chart", label: "Size guide", tone: "gold" },
+  { value: "customer", label: "Customers", tone: "maroon" },
+  { value: "coupon", label: "Coupons", tone: "success" },
+  { value: "content", label: "Homepage", tone: "success" },
+  { value: "review", label: "Reviews", tone: "success" },
 ];
+/** Unknown types (e.g. added later) still show, instead of breaking the page */
+const typeOf = (v: string) => TYPES.find((x) => x.value === v) ?? { value: v, label: v.replace(/_/g, " "), tone: "neutral" as BadgeTone };
 
 const filters = z.object({
   actor: z.string().email().optional().catch(undefined),
-  type: z.enum(["order", "product", "settings", "admin", "session"]).optional().catch(undefined),
+  type: z.enum(TYPES.map((t) => t.value) as [ActivityEntry["entity_type"], ...ActivityEntry["entity_type"][]]).optional().catch(undefined),
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
   page: z.coerce.number().int().min(1).optional().catch(undefined),
@@ -35,7 +45,19 @@ const when = (iso: string) =>
   new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" });
 
 const entityLink = (a: ActivityEntry) =>
-  a.entity_id && a.entity_type === "order" ? `/admin/orders/${a.entity_id}` : a.entity_id && a.entity_type === "product" ? `/admin/products/${a.entity_id}` : a.entity_type === "settings" ? "/admin/settings" : null;
+  ({
+    order: a.entity_id && `/admin/orders/${a.entity_id}`,
+    product: a.entity_id && `/admin/products/${a.entity_id}`,
+    inventory: a.entity_id && `/admin/products/${a.entity_id}`,
+    customer: a.entity_id && `/admin/customers/${a.entity_id}`,
+    collection: a.entity_id && `/admin/collections/${a.entity_id}`,
+    settings: "/admin/settings",
+    category: "/admin/categories",
+    size_chart: "/admin/sizes",
+    coupon: "/admin/coupons",
+    content: "/admin/content",
+    review: "/admin/reviews",
+  } as Record<string, string | null | undefined>)[a.entity_type] || null;
 
 /** Money fields are stored in paise; show them in rupees. */
 const MONEY = /price|charge|shipping|free_shipping|total|rates/;
@@ -114,7 +136,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
               key: "what",
               header: "What",
               cell: (a) => {
-                const t = TYPES.find((x) => x.value === a.entity_type)!;
+                const t = typeOf(a.entity_type);
                 const href = entityLink(a);
                 return (
                   <div className="space-y-1 text-left">

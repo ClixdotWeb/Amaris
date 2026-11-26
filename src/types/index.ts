@@ -30,6 +30,10 @@ export interface Category {
   product_type: ProductType;
   description: string | null;
   sort_order: number;
+  /** Cover photo (full URL). null/undefined = the built-in photo. */
+  image_url?: string | null;
+  /** false = hidden from the shop */
+  is_visible?: boolean;
 }
 
 export interface ProductImage {
@@ -176,6 +180,13 @@ export interface Order {
   admin_notes: string | null;
   /** Set when a cancelled / refunded order's stock was put back, so it only happens once. */
   stock_restored_at?: string | null;
+  /** How the customer pays: online (Razorpay) or cash on delivery */
+  payment_method?: "online" | "cod";
+  /** Cash on delivery charge (paise), included in total */
+  cod_fee?: number;
+  /** Coupon discount on the items (paise) and its code */
+  discount?: number;
+  coupon_code?: string | null;
   created_at: string;
 }
 
@@ -196,6 +207,9 @@ export interface OrderItem {
   sizing: Sizing | null;
   dispatch_type: DispatchType;
   line_total: number;
+  /** Made-to-order lines only: workshop progress */
+  production_status?: ProductionStatus;
+  production_note?: string | null;
 }
 
 export interface OrderWithItems extends Order {
@@ -216,6 +230,10 @@ export interface ShopSettings {
   /** International flat rates by ISO country code. Countries not listed cannot check out. Paise. */
   international_rates: Record<string, number>;
   cod_enabled: boolean;
+  /** Extra charge for cash on delivery (paise); 0 = none */
+  cod_fee?: number;
+  /** Cash on delivery only for orders up to this total (paise); null = no limit */
+  cod_max_order?: number | null;
 }
 
 /* ───────────── Admin dashboard ───────────── */
@@ -237,7 +255,7 @@ export interface ActivityEntry {
   actor_email: string | null;
   /** e.g. "product.update", "order.status", "admin.add" */
   action: string;
-  entity_type: "product" | "order" | "settings" | "admin" | "session";
+  entity_type: "product" | "order" | "settings" | "admin" | "session" | "inventory" | "category" | "collection" | "size_chart" | "customer" | "coupon" | "content" | "review";
   entity_id: string | null;
   summary: string;
   /** Changed fields: { field: [old, new] } */
@@ -245,3 +263,117 @@ export interface ActivityEntry {
   ip: string | null;
   created_at: string;
 }
+
+/* ───────────── Catalogue, marketing and operations (dashboard Phases 3–11) ───────────── */
+
+/** One change to a stock figure, with the reason. Never edited. */
+export interface StockMovement {
+  id: string;
+  product_id: string;
+  product_name: string;
+  /** Variant id, or null for a product with one stock figure */
+  variant_id: string | null;
+  /** "M", "Green", "M / Green" or null */
+  label: string | null;
+  change: number;
+  stock_after: number;
+  reason: "restock" | "correction" | "damaged" | "returned" | "sale" | "cancelled";
+  note: string | null;
+  actor_email: string | null;
+  created_at: string;
+}
+
+/** A hand-picked group of products with its own page in the shop (/collections/slug). */
+export interface Collection {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  /** In display order */
+  product_ids: string[];
+  created_at: string;
+}
+
+/** A size chart shown on product pages of the categories it is linked to. */
+export interface SizeChartData {
+  id: string;
+  name: string;
+  unit: "inches" | "cm";
+  /** Size names, e.g. XS … XXL */
+  sizes: string[];
+  rows: { label: string; values: string[] }[];
+  note: string | null;
+  /** Category slugs that use this chart */
+  category_slugs: string[];
+}
+
+export interface Coupon {
+  id: string;
+  /** Upper-case */
+  code: string;
+  description: string | null;
+  type: "percent" | "flat";
+  /** Percent (1–100) or paise */
+  value: number;
+  /** Smallest order subtotal (paise) */
+  min_order: number;
+  /** Largest discount for percent coupons (paise), or null */
+  max_discount: number | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  /** Total uses allowed, or null for no limit */
+  usage_limit: number | null;
+  used_count: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Review {
+  id: string;
+  product_id: string;
+  name: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  status: "pending" | "approved" | "hidden";
+  created_at: string;
+}
+
+/** Home page content edited in the dashboard. Empty fields fall back to the built-in text and photos. */
+export interface HomeContent {
+  hero: {
+    left: string;
+    right: string;
+    tagline: string;
+    description: string;
+    href: string;
+    image_url: string;
+    /** Focus point of the photo as CSS object-position ("36% 50%"): stays in view on wide and tall screens */
+    position: string;
+  }[];
+  announcements: string[];
+  promo_tiles: { eyebrow: string; title: string; href: string; image_url: string }[];
+  /** Collections shown as rails on the home page, by id */
+  featured_collection_ids: string[];
+  /** Background of every shop page */
+  wallpaper: SiteWallpaper;
+}
+
+/**
+ * The shop's background. default = the built-in damask; pattern = an uploaded image repeated like wallpaper;
+ * photo = one uploaded picture filling the screen; none = plain ivory.
+ */
+export interface SiteWallpaper {
+  mode: "default" | "pattern" | "photo" | "none";
+  image_url: string;
+  /** 0–100: how strongly it shows through */
+  strength: number;
+  /** Pattern only: width of one repeat in pixels */
+  size: number;
+}
+
+/** Where a made-to-order line is in the workshop. */
+export type ProductionStatus = "not_started" | "cutting" | "stitching" | "ready";

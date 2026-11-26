@@ -271,11 +271,23 @@ export function Skeleton({ className = "" }: { className?: string }) {
 }
 
 /** Status filter pills: links that keep the URL shareable. */
-export function FilterPills({ items }: { items: { href: string; label: string; active: boolean; count?: number }[] }) {
+export function FilterPills({
+  items,
+  stretch = false,
+}: {
+  items: { href: string; label: string; active: boolean; count?: number }[];
+  /** Spread the pills across the full width on large screens (equal widths). */
+  stretch?: boolean;
+}) {
   return (
     <nav aria-label="Filter" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
       {items.map((i) => (
-        <Link key={i.href} href={i.href} aria-current={i.active ? "page" : undefined} className={`chip shrink-0 !text-[12px] ${i.active ? "chip-active" : ""}`}>
+        <Link
+          key={i.href}
+          href={i.href}
+          aria-current={i.active ? "page" : undefined}
+          className={`chip shrink-0 justify-center !text-[12px] ${stretch ? "lg:flex-1 lg:basis-0 lg:whitespace-nowrap" : ""} ${i.active ? "chip-active" : ""}`}
+        >
           {i.label}
           {i.count != null && <span className="ml-1.5 opacity-70">{i.count}</span>}
         </Link>

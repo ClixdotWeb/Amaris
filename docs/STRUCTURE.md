@@ -40,6 +40,18 @@ ADMIN  (src/app/admin/ — plan: docs/ADMIN_DASHBOARD_PLAN.md)
 /admin/users                   Admin accounts: add (starting password), remove (not yourself / not the last)
 /admin/activity                Activity log: who changed what; filter by admin, area, dates
 /admin/search?q=               Global search: orders (no., name, email, phone) + products
+/admin/dispatch                Paid orders to send: mark packed, consignment no. → dispatched; print labels
+/admin/production              Stitching queue: made-to-order lines, due dates, workshop steps, notes, job cards
+/admin/customers[/id]          Customers: orders, spend, notes, block / unblock
+/admin/inventory               Stock per product / size / colour, Add / Remove / Set to with a reason; ?view=history
+/admin/categories              Categories: add, edit, order, cover photo, show/hide (drives the shop menu)
+/admin/collections[/new|/id]   Hand-picked collections with product picker (shop: /collections/[slug])
+/admin/sizes                   Size charts linked to categories (shown on product pages)
+/admin/coupons                 Discount codes (cart coupon box, checked again at checkout)
+/admin/content                 Home page: hero slides, announcement messages, promo tiles, featured collections
+/admin/reviews                 Review moderation (shop: reviews + form on product pages)
+/admin/reports                 Sales reports + CSV (/api/admin/reports/csv)
+/admin/print/labels, /admin/print/job-card/[id]   Print pages (no dashboard frame)
 
 API
 POST /api/checkout/create-order   Re-prices cart on server → pending order → Razorpay order

@@ -41,6 +41,8 @@ export async function POST(req: Request) {
       stitching_total: priced.stitchingTotal,
       shipping_fee: priced.shippingFee,
       total: priced.total,
+      // Coupon columns come with the database move (docs/ADMIN_DASHBOARD_PLAN.md §3.4)
+      ...(priced.discount ? { discount: priced.discount, coupon_code: priced.couponCode } : {}),
       is_international: priced.isInternational,
       carrier: priced.isInternational ? null : "India Post",
       policies_accepted_at: new Date().toISOString(),

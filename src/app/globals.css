@@ -83,7 +83,7 @@
   h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.15; }
 
   /* Form controls: consistent defaults across shop, account and admin */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]),
   select,
   textarea {
     width: 100%;
@@ -100,6 +100,8 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-maroon) 12%, transparent);
   }
   input[type="checkbox"], input[type="radio"] { accent-color: var(--color-maroon); width: 1rem; height: 1rem; }
+  /* Sliders (e.g. wallpaper strength): thin track, burgundy thumb */
+  input[type="range"] { width: 100%; height: 1.5rem; background: transparent; accent-color: var(--color-maroon); cursor: pointer; }
   label { font-size: 0.875rem; }
   fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
   legend { font-weight: 500; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
@@ -162,6 +164,8 @@
   .table-amaris th, .admin-area th { text-align: left; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-sand); }
   .table-amaris td, .admin-area td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-sand); vertical-align: top; }
   .table-amaris a, .admin-area td a { color: var(--color-maroon); text-decoration: underline; text-underline-offset: 3px; }
+  .admin-area td a.btn-outline { color: var(--color-ink); text-decoration: none; }
+  .admin-area td a.btn-primary { color: #fff; text-decoration: none; }
 
   /* ───────────── Admin dashboard (docs/ADMIN_UI_GUIDE.md) ───────────── */
   .btn-danger {
@@ -182,7 +186,7 @@
   .admin-area a.card, .admin-area .card-hover { transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft), border-color 0.3s; }
   .admin-area a.card:hover, .admin-area .card-hover:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
   .admin-area .btn-primary, .admin-area .btn-outline, .admin-area .btn-light, .admin-area .btn-danger, .admin-area .chip { border-radius: var(--radius-control); }
-  .admin-area input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+  .admin-area input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]),
   .admin-area select,
   .admin-area textarea { border-color: var(--color-sand-strong); border-radius: var(--radius-control); padding: 0.6rem 0.85rem; }
   .admin-area input:hover:not(:focus), .admin-area select:hover:not(:focus), .admin-area textarea:hover:not(:focus) { border-color: var(--color-muted); }

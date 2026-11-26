@@ -208,7 +208,7 @@ export async function saveProduct(_: ProductFormState, form: FormData): Promise<
   });
 
   revalidatePath("/admin/products");
-  redirect(`/admin/products/${result.id}?flash=${before ? "saved" : "created"}`);
+  redirect(before ? `/admin/products/${result.id}?flash=saved` : `/admin/products?flash=created&added=${result.id}`);
 }
 
 export async function deleteImage(_: ActionResult, form: FormData): Promise<ActionResult> {

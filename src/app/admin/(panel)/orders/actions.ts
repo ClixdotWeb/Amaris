@@ -47,6 +47,7 @@ export async function markDispatched(_: OrderActionState, form: FormData): Promi
   });
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
+  revalidatePath("/admin/dispatch");
   return { ok: "Marked as dispatched. The customer has been emailed." };
 }
 
@@ -62,10 +63,12 @@ export async function updateOrderStatus(_: OrderActionState, form: FormData): Pr
   const parsed = statusSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Choose a valid status." };
   const { id, status } = parsed.data;
-  const admin_notes = parsed.data.admin_notes?.trim() || null;
+  // Forms without a notes box (e.g. "Mark packed" on the Dispatch page) leave the notes as they are
+  const notesGiven = form.has("admin_notes");
 
   const order = await db.orders.get(id);
   if (!order) return { error: "Order not found." };
+  const admin_notes = notesGiven ? parsed.data.admin_notes?.trim() || null : (order.admin_notes ?? null);
   if (!canTransition(order.status, status))
     return { error: `Can't change “${ORDER_STATUS_LABELS[order.status]}” to “${ORDER_STATUS_LABELS[status]}”.` };
   if (status === "dispatched" && order.status !== "dispatched")
@@ -91,5 +94,6 @@ export async function updateOrderStatus(_: OrderActionState, form: FormData): Pr
 
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders");
+  revalidatePath("/admin/dispatch");
   return { ok: restocked ? "Saved. The items were added back to stock." : "Saved." };
 }

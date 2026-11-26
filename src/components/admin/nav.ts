@@ -21,8 +21,8 @@ import {
 
 /**
  * Sidebar sections, grouped as in docs/ADMIN_DASHBOARD_PLAN.md §5.
- * Sections whose phase isn't built yet have `soon` (the phase that builds them): they show a "Soon" tag
- * and are not links, so the menu never leads to a missing page.
+ * An item can have `soon` (a label for a section not built yet): it then shows a "Soon" tag and isn't a link.
+ * Every section is built now, so no item uses it.
  */
 export type AdminNavItem = {
   href: string;
@@ -30,7 +30,7 @@ export type AdminNavItem = {
   icon: LucideIcon;
   exact?: boolean;
   /** Key into the counts passed to the frame (e.g. orders waiting to be dispatched). */
-  badge?: "toDispatch";
+  badge?: "toDispatch" | "pendingReviews";
   /** Not built yet: which phase builds it (shown as a tooltip). */
   soon?: string;
 };
@@ -44,33 +44,33 @@ export const adminNav: { group?: string; items: AdminNavItem[] }[] = [
     group: "Sales",
     items: [
       { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: "toDispatch" },
-      { href: "/admin/orders/dispatch", label: "Dispatch", icon: Truck, soon: "Phase 4: Orders" },
-      { href: "/admin/production", label: "Stitching", icon: Scissors, soon: "Phase 5: Stitching queue" },
-      { href: "/admin/customers", label: "Customers", icon: Users, soon: "Phase 7: Customers" },
+      { href: "/admin/dispatch", label: "Dispatch", icon: Truck },
+      { href: "/admin/production", label: "Stitching", icon: Scissors },
+      { href: "/admin/customers", label: "Customers", icon: Users },
     ],
   },
   {
     group: "Catalogue",
     items: [
       { href: "/admin/products", label: "Products", icon: Package },
-      { href: "/admin/inventory", label: "Inventory", icon: Boxes, soon: "Phase 3: Inventory" },
-      { href: "/admin/categories", label: "Categories", icon: Tags, soon: "Phase 3: Catalogue" },
-      { href: "/admin/collections", label: "Collections", icon: Layers, soon: "Phase 3: Catalogue" },
-      { href: "/admin/sizes", label: "Size guide", icon: Ruler, soon: "Phase 3: Catalogue" },
+      { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+      { href: "/admin/categories", label: "Categories", icon: Tags },
+      { href: "/admin/collections", label: "Collections", icon: Layers },
+      { href: "/admin/sizes", label: "Size guide", icon: Ruler },
     ],
   },
   {
     group: "Marketing",
     items: [
-      { href: "/admin/coupons", label: "Coupons", icon: TicketPercent, soon: "Phase 8: Coupons & COD" },
-      { href: "/admin/content", label: "Homepage", icon: LayoutTemplate, soon: "Phase 9: Content" },
-      { href: "/admin/reviews", label: "Reviews", icon: Star, soon: "Phase 11: Reviews" },
+      { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },
+      { href: "/admin/content", label: "Homepage", icon: LayoutTemplate },
+      { href: "/admin/reviews", label: "Reviews", icon: Star, badge: "pendingReviews" },
     ],
   },
   {
     group: "Insights",
     items: [
-      { href: "/admin/reports", label: "Reports", icon: ChartColumn, soon: "Phase 6: Reports" },
+      { href: "/admin/reports", label: "Reports", icon: ChartColumn },
       { href: "/admin/activity", label: "Activity log", icon: Activity },
     ],
   },

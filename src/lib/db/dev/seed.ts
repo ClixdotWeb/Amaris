@@ -50,6 +50,7 @@ const STATUS_MIX: [OrderStatus, number][] = [
 ];
 
 export function seedDevStore(): DevData {
+  // Tables added after Phase 2 are filled in by upgrade() (store.ts)
   const rand = rng(20261125);
   const pick = <T,>(a: readonly T[]) => a[Math.floor(rand() * a.length)];
   const now = Date.now();
@@ -204,7 +205,7 @@ export function seedDevStore(): DevData {
 
   orders.sort((a, b) => b.created_at.localeCompare(a.created_at));
 
-  return {
+  const seeded = {
     version: 1,
     seeded_at: new Date(now).toISOString(),
     categories,
@@ -220,5 +221,6 @@ export function seedDevStore(): DevData {
     settings,
     admins: [], // the first admin is created at first sign-in from .env.local (src/lib/admin/accounts.ts)
     activity: [],
-  };
+  } as unknown as DevData;
+  return seeded;
 }

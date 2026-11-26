@@ -1,16 +1,15 @@
 import { formatINR } from "@/lib/format";
 import { getSettings } from "@/lib/data/settings";
+import { getHomeContent } from "@/lib/data/content";
 import { Lotus } from "@/components/ui/Lotus";
 
 /** Infinite scrolling service marquee, shown under the home hero. Pauses on hover. */
 export async function AnnouncementBar() {
-  const s = await getSettings();
-  const messages = [
-    "In-stock items dispatched within 48 hours",
-    s.free_shipping_above ? `Free India Post delivery above ${formatINR(s.free_shipping_above)}` : "Delivered across India by India Post",
-    "Custom stitching to your measurements",
-    "Secure payments by Razorpay",
-  ];
+  const [s, content] = await Promise.all([getSettings(), getHomeContent()]);
+  // Messages are edited in the dashboard (Homepage). The delivery line mentions free shipping when it's set.
+  const messages = content.announcements.map((m) =>
+    m === "Delivered across India by India Post" && s.free_shipping_above ? `Free India Post delivery above ${formatINR(s.free_shipping_above)}` : m,
+  );
   const row = (hidden: boolean) => (
     <ul className="flex shrink-0 items-center" aria-hidden={hidden || undefined}>
       {messages.map((m) => (

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { listProducts } from "@/lib/data/products";
-import { categoryPhoto } from "@/lib/data/mock";
+import { getHomeContent, listCollections } from "@/lib/data/content";
 import { VisitCta } from "@/components/home/VisitCta";
 import { WordReveal } from "@/components/ui/WordReveal";
 import fs from "node:fs";
@@ -12,8 +12,7 @@ import { ProductRail, RailItem } from "@/components/home/ProductRail";
 import { SectionHeading } from "@/components/home/SectionHeading";
 import { AtelierBanner } from "@/components/home/AtelierBanner";
 import { ProductCard } from "@/components/product/ProductCard";
-import type { ProductWithRelations } from "@/types";
-import { cloudImage, PHOTO_WIDE } from "@/lib/images";
+import type { HomeContent, ProductWithRelations } from "@/types";
 
 /** Only reference a video if the file is really there (otherwise the slide shows its poster). */
 const publicFile = (p: string) => (fs.existsSync(path.join(process.cwd(), "public", p)) ? p : undefined);
@@ -23,45 +22,21 @@ const publicFile = (p: string) => (fs.existsSync(path.join(process.cwd(), "publi
  * hero-ready.mp4 / hero-ready-mobile.mp4 (9:16), hero-saree(.mp4|-mobile.mp4), hero-stitching(.mp4|-mobile.mp4).
  * Without a video, slides show the boutique's campaign photos (amaris/site/hero on Cloudinary).
  */
-function heroSlides(): EditorialSlide[] {
-  return [
-    {
-      left: "ready",
-      right: "to wear",
-      tagline: "Handpicked in Kerala",
-      description: "Anarkalis and salwar sets, ready to wear and dispatched within 48 hours.",
-      href: "/shop/ready-made",
-      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: cloudImage("/Assets/hero/hero-readymade-black-chikankari.jpg", PHOTO_WIDE),
-      posterPosition: "36% 50%",
-      video: publicFile("/videos/hero-ready.mp4"),
-      videoMobile: publicFile("/videos/hero-ready-mobile.mp4"),
-    },
-    {
-      left: "heritage",
-      right: "drapes",
-      tagline: "Handpicked in Kerala",
-      description: "From classic Kerala kasavu to festive silks, draped in timeless grace.",
-      href: "/shop/saree",
-      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: cloudImage("/Assets/hero/hero-saree-red-banarasi.jpg", PHOTO_WIDE),
-      posterPosition: "60% 50%",
-      video: publicFile("/videos/hero-saree.mp4"),
-      videoMobile: publicFile("/videos/hero-saree-mobile.mp4"),
-    },
-    {
-      left: "tailored",
-      right: "for you",
-      tagline: "Handpicked in Kerala",
-      description: "Choose your fabric and we stitch it to your size or exact measurements.",
-      href: "/shop/unstitched-salwar-suits",
-      // Boutique campaign photo (public/Assets/hero). Phones crop to the outfit.
-      poster: cloudImage("/Assets/hero/hero-suit-yellow-garden.jpg", PHOTO_WIDE),
-      posterPosition: "71% 50%",
-      video: publicFile("/videos/hero-stitching.mp4"),
-      videoMobile: publicFile("/videos/hero-stitching-mobile.mp4"),
-    },
-  ];
+function heroSlides(hero: HomeContent["hero"]): EditorialSlide[] {
+  // Text, links and photos come from the dashboard (Homepage); videos are files in public/videos
+  const videos = ["ready", "saree", "stitching"];
+  return hero.map((h, i) => ({
+    left: h.left,
+    right: h.right,
+    tagline: h.tagline,
+    description: h.description,
+    href: h.href,
+    poster: h.image_url,
+    // Focus point set in the dashboard, so a new photo stays framed on wide and tall screens
+    posterPosition: h.position,
+    video: videos[i] ? publicFile(`/videos/hero-${videos[i]}.mp4`) : undefined,
+    videoMobile: videos[i] ? publicFile(`/videos/hero-${videos[i]}-mobile.mp4`) : undefined,
+  }));
 }
 
 function Rail({ products, href, tone = "light" }: { products: ProductWithRelations[]; href: string; tone?: "light" | "dark" }) {
@@ -77,18 +52,26 @@ function Rail({ products, href, tone = "light" }: { products: ProductWithRelatio
 }
 
 export default async function HomePage() {
-  const [newArrivals, suits, sarees, deals] = await Promise.all([
+  const [content, collections, newArrivals, suits, sarees, deals] = await Promise.all([
+    getHomeContent(),
+    listCollections(),
     listProducts({ newArrivals: true, limit: 8 }),
     listProducts({ categorySlug: "unstitched-salwar-suits", limit: 8 }),
     listProducts({ categorySlug: "saree", limit: 8 }),
     listProducts({ hotDeals: true, limit: 8 }),
   ]);
+  // Collections chosen in the dashboard (Homepage → Featured collections), each as a product rail
+  const featured = await Promise.all(
+    collections
+      .filter((c) => content.featured_collection_ids.includes(c.id))
+      .map(async (c) => ({ c, products: (await listProducts({ collectionSlug: c.slug, limit: 8 })).products })),
+  );
 
   return (
     <>
       {/* Editorial video hero. Opens straight on slide 1 (no logo-reveal intro). */}
       <HeroEditorial
-        slides={heroSlides()}
+        slides={heroSlides(content.hero)}
         feature={
           newArrivals.products[0]
             ? {
@@ -114,6 +97,15 @@ export default async function HomePage() {
         <Rail products={newArrivals.products} href="/new-arrivals" />
       </section>
 
+      {featured
+        .filter((f) => f.products.length)
+        .map(({ c, products }) => (
+          <section key={c.id} className="container-x pt-24">
+            <SectionHeading eyebrow="Collection" title={c.name} tagline={c.description ?? undefined} />
+            <Rail products={products} href={`/collections/${c.slug}`} />
+          </section>
+        ))}
+
       {/* Stitching service banner */}
       <AtelierBanner />
 
@@ -129,13 +121,9 @@ export default async function HomePage() {
 
       {/* Split promo tiles */}
       <section className="container-x grid gap-4 pt-24 md:grid-cols-2 md:gap-6">
-        {[
-          // Same pictures as the category covers (mock.ts): real bedsheet photo; kids is a placeholder until photographed.
-          { slug: "kids-dresses", eyebrow: "Made to order", title: "Kids Dresses", href: "/shop/kids-dresses" },
-          { slug: "home-linen", eyebrow: "For your home", title: "Home Linen", href: "/shop/home-linen" },
-        ].map((t) => (
+        {content.promo_tiles.map((t) => (
           <Link key={t.href} href={t.href} className="group relative block aspect-[4/3] overflow-hidden md:aspect-[5/4]">
-            <img src={categoryPhoto(t.slug, 1100)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <img src={t.image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-8 text-ivory">
               <p className="eyebrow !text-gold-light">{t.eyebrow}</p>

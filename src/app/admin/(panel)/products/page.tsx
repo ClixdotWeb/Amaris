@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Plus } from "lucide-react";
+import { Package, Plus, Pencil } from "lucide-react";
 import { z } from "zod";
 import { db, PRODUCT_SORTS, type ProductSort } from "@/lib/db";
 import { formatINR } from "@/lib/format";
@@ -19,7 +19,7 @@ import type { ProductWithRelations } from "@/types";
 
 export const metadata = { title: "Products" };
 
-const FLASH = { deleted: "Product deleted. Find it under Show: Deleted to restore it." };
+const FLASH = { deleted: "Product deleted. Find it under Show: Deleted to restore it.", created: "Product added. It's at the top of the list." };
 
 const PAGE_SIZE = 24;
 
@@ -95,6 +95,25 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     deletedView
       ? { key: "restore", header: "", align: "right", cell: (p) => <RestoreButton id={p.id} size="xs" /> }
       : { key: "live", header: "Live", cell: (p) => <LiveSwitch p={p} /> },
+    ...(deletedView
+      ? []
+      : [
+          {
+            key: "edit",
+            header: "",
+            align: "right" as const,
+            cell: (p: ProductWithRelations) => (
+              <Link
+                href={`/admin/products/${p.id}`}
+                title="Edit"
+                aria-label={`Edit ${p.name}`}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sand !text-ink !no-underline transition-colors hover:border-maroon hover:bg-maroon hover:!text-white"
+              >
+                <Pencil size={14} strokeWidth={1.6} aria-hidden />
+              </Link>
+            ),
+          },
+        ]),
   ];
 
   return (

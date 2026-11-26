@@ -1,9 +1,11 @@
 "use client";
 import { useRef } from "react";
-import { SIZE_CHART } from "@/config/shop";
+import type { SizeChartData } from "@/types";
 
-/** "Size chart" link that opens the client's size chart in a modal dialog. */
-export function SizeChart() {
+export type SizeChartView = Omit<SizeChartData, "id" | "category_slugs"> & { category_slugs?: string[] };
+
+/** "Size chart" link that opens the category's size chart (dashboard → Size guide) in a modal dialog. */
+export function SizeChart({ chart: SIZE_CHART }: { chart: SizeChartView }) {
   const ref = useRef<HTMLDialogElement>(null);
 
   return (
@@ -35,7 +37,7 @@ export function SizeChart() {
             ))}
           </tbody>
         </table>
-        <p>Note: {SIZE_CHART.note}</p>
+        {SIZE_CHART.note && <p>Note: {SIZE_CHART.note}</p>}
         {/* Not <form method="dialog">: this sits inside the add-to-cart form, and forms can't nest */}
         <button type="button" onClick={() => ref.current?.close()}>
           Close

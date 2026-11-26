@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { categories } from "@/config/navigation";
 import { categoryPhoto } from "@/lib/data/mock";
+import { listCategories } from "@/lib/data/products";
 
 const SHORT: Record<string, string> = {
   "unstitched-salwar-suits": "Unstitched Suits",
@@ -16,14 +16,16 @@ const EASE = "cubic-bezier(0.65,0,0.35,1)";
  * (SVG stroke-dashoffset), the photo zooms gently, and the label turns burgundy with a growing hairline.
  * TODO: replace photos with the client's own category images.
  */
-export function CategoryCircles() {
+export async function CategoryCircles() {
+  // Order, names, photos and visibility come from the dashboard (Categories)
+  const categories = await listCategories();
   return (
     <ul
       data-reveal-stagger
       className="no-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 pt-2 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-10 md:overflow-visible md:px-0 lg:grid-cols-8 lg:gap-8"
     >
       {categories.map((c) => {
-        const photo = categoryPhoto(c.slug, 420);
+        const photo = c.image_url || categoryPhoto(c.slug, 420);
         return (
           <li key={c.slug} className="w-28 shrink-0 md:w-auto">
             <Link href={`/shop/${c.slug}`} className="group flex flex-col items-center text-center outline-none">

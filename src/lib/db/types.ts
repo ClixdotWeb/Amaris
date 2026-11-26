@@ -6,6 +6,14 @@
  * Business rules (allowed status changes, prices in paise…) live in src/lib/admin/, not in a backend.
  */
 import type {
+  Collection,
+  Coupon,
+  HomeContent,
+  OrderItem,
+  ProductionStatus,
+  Review,
+  SizeChartData,
+  StockMovement,
   ProductColour,
   ProductStatus,
   ActivityEntry,
@@ -145,9 +153,195 @@ export type OrderPatch = Partial<
   Pick<Order, "status" | "admin_notes" | "carrier" | "consignment_number" | "dispatched_at">
 >;
 
+/* ───── Inventory ───── */
+export interface StockRow {
+  productId: string;
+  /** null for a product with one stock figure */
+  variantId: string | null;
+  name: string;
+  sku: string | null;
+  category: string;
+  image: string | null;
+  /** "M", "Green", "M / Green" or null */
+  label: string | null;
+  stock: number;
+  unit: "pcs" | "m";
+  status: ProductStatus;
+}
+export interface StockFilters {
+  q?: string;
+  categorySlug?: string;
+  stock?: "out" | "low" | "in";
+  page?: number;
+  pageSize?: number;
+}
+export interface StockAdjust {
+  productId: string;
+  variantId: string | null;
+  /** add: change by amount (negative to remove); set: new stock figure */
+  mode: "add" | "set";
+  amount: number;
+  reason: StockMovement["reason"];
+  note: string | null;
+}
+
+/* ───── Catalogue ───── */
+export interface CategoryInput {
+  id?: string;
+  name: string;
+  slug: string;
+  product_type: Category["product_type"];
+  description: string | null;
+  image_url: string | null;
+  is_visible: boolean;
+}
+export type CollectionInput = Omit<Collection, "id" | "created_at" | "sort_order"> & { id?: string };
+export type SizeChartInput = Omit<SizeChartData, "id"> & { id?: string };
+export type CouponInput = Omit<Coupon, "id" | "created_at" | "used_count"> & { id?: string };
+
+/* ───── Customers ───── */
+export interface CustomerRow {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  created_at: string;
+  is_blocked: boolean;
+  notes: string | null;
+  orders: number;
+  /** Paid orders only, cancelled and refunded excluded (paise) */
+  spent: number;
+  last_order_at: string | null;
+}
+export interface CustomerFilters {
+  q?: string;
+  blocked?: boolean;
+  sort?: "newest" | "spent" | "orders";
+  page?: number;
+  pageSize?: number;
+}
+
+/* ───── Stitching queue ───── */
+export interface ProductionRow {
+  item: OrderItem;
+  order: { id: string; order_number: string; created_at: string; status: OrderStatus; customer: string; phone: string };
+  /** Paid date + 60 days */
+  due_at: string;
+}
+
+/* ───── Reports ───── */
+export interface SalesReport {
+  kpis: { revenue: number; orders: number; aov: number; items: number; stitching: number };
+  byDay: { day: string; revenue: number; orders: number }[];
+  byProduct: { id: string | null; name: string; qty: number; revenue: number }[];
+  byCategory: { name: string; qty: number; revenue: number }[];
+  bySize: { size: string; qty: number }[];
+}
+
+/* ───── Shop (what the storefront reads) ───── */
+/** An order placed at checkout, already priced by priceCart (src/lib/checkout.ts). */
+export interface NewShopOrder {
+  email: string;
+  phone: string;
+  full_name: string;
+  shipping_address: Order["shipping_address"];
+  items: Omit<OrderItem, "id" | "order_id">[];
+  subtotal: number;
+  stitching_total: number;
+  shipping_fee: number;
+  discount: number;
+  coupon_code: string | null;
+  total: number;
+  is_international: boolean;
+  customer_notes: string | null;
+}
+export interface ShopProductFilter {
+  categorySlug?: string;
+  query?: string;
+  newArrivals?: boolean;
+  hotDeals?: boolean;
+  premium?: boolean;
+  collectionSlug?: string;
+  sort?: "newest" | "price_asc" | "price_desc";
+  limit?: number;
+  offset?: number;
+}
+
 export interface AdminDb {
   categories: {
     list(): Promise<Category[]>;
+    save(input: CategoryInput): Promise<SaveResult>;
+    /** Move one place up or down in the menu order. */
+    move(id: string, dir: -1 | 1): Promise<void>;
+    /** Only categories with no products can be removed. */
+    remove(id: string): Promise<{ ok: true } | { ok: false; error: string }>;
+    /** Products per category id (deleted products not counted). */
+    productCounts(): Promise<Record<string, number>>;
+  };
+  inventory: {
+    list(f: StockFilters): Promise<Page<StockRow>>;
+    adjust(a: StockAdjust, actor: string | null): Promise<{ ok: true; stock: number; movement: StockMovement } | { ok: false; error: string }>;
+    history(f: { productId?: string; page?: number; pageSize?: number }): Promise<Page<StockMovement>>;
+  };
+  collections: {
+    list(): Promise<Collection[]>;
+    get(id: string): Promise<Collection | null>;
+    save(input: CollectionInput): Promise<SaveResult>;
+    move(id: string, dir: -1 | 1): Promise<void>;
+    remove(id: string): Promise<void>;
+  };
+  sizeCharts: {
+    list(): Promise<SizeChartData[]>;
+    get(id: string): Promise<SizeChartData | null>;
+    save(input: SizeChartInput): Promise<SaveResult>;
+    remove(id: string): Promise<void>;
+  };
+  customers: {
+    list(f: CustomerFilters): Promise<Page<CustomerRow>>;
+    get(id: string): Promise<{ customer: CustomerRow; orders: OrderWithItems[] } | null>;
+    update(id: string, patch: { is_blocked?: boolean; notes?: string | null }): Promise<CustomerRow | null>;
+  };
+  coupons: {
+    list(): Promise<Coupon[]>;
+    get(id: string): Promise<Coupon | null>;
+    findByCode(code: string): Promise<Coupon | null>;
+    save(input: CouponInput): Promise<SaveResult>;
+    remove(id: string): Promise<void>;
+  };
+  content: {
+    get(): Promise<HomeContent>;
+    save(c: HomeContent): Promise<void>;
+  };
+  reviews: {
+    list(f: { status?: Review["status"]; page?: number; pageSize?: number }): Promise<Page<Review & { product_name: string; product_slug: string | null }>>;
+    setStatus(id: string, status: Review["status"]): Promise<Review | null>;
+    remove(id: string): Promise<Review | null>;
+    counts(): Promise<Record<Review["status"], number>>;
+  };
+  production: {
+    list(f: { status?: ProductionStatus; page?: number; pageSize?: number }): Promise<Page<ProductionRow>>;
+    get(itemId: string): Promise<ProductionRow | null>;
+    update(itemId: string, patch: { production_status?: ProductionStatus; production_note?: string | null }): Promise<ProductionRow | null>;
+    counts(): Promise<Record<ProductionStatus, number>>;
+  };
+  reports: {
+    sales(fromIso: string, toIso: string): Promise<SalesReport>;
+  };
+  /** Read-only views for the storefront (published, not deleted, sale prices applied). */
+  shop: {
+    products(f: ShopProductFilter): Promise<{ products: ProductWithRelations[]; count: number }>;
+    productBySlug(slug: string): Promise<ProductWithRelations | null>;
+    productsByIds(ids: string[]): Promise<ProductWithRelations[]>;
+    categories(): Promise<Category[]>;
+    collections(): Promise<Collection[]>;
+    collectionBySlug(slug: string): Promise<Collection | null>;
+    sizeChartFor(categorySlug: string): Promise<SizeChartData | null>;
+    reviewsFor(productId: string): Promise<Review[]>;
+    addReview(r: Pick<Review, "product_id" | "name" | "rating" | "title" | "body">): Promise<void>;
+    /** Saves an order waiting for payment (customer found by email, or added). */
+    createOrder(o: NewShopOrder): Promise<{ id: string; order_number: string }>;
+    /** Pending → paid once: takes the items out of stock, records the stock change, counts the coupon. */
+    payOrder(id: string, paymentRef: string, cod?: { fee: number }): Promise<OrderWithItems | null>;
   };
   products: {
     list(f: ProductFilters): Promise<Page<ProductWithRelations>>;

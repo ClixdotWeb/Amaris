@@ -36,7 +36,7 @@ export async function ProductListing({
   description?: string | null;
   basePath: string;
   searchParams: { sort?: string; page?: string; q?: string };
-  filter: { categorySlug?: string; newArrivals?: boolean; hotDeals?: boolean; premium?: boolean; query?: string };
+  filter: { categorySlug?: string; collectionSlug?: string; newArrivals?: boolean; hotDeals?: boolean; premium?: boolean; query?: string };
   hideHeader?: boolean;
 }) {
   const page = Math.max(1, Number(searchParams.page) || 1);

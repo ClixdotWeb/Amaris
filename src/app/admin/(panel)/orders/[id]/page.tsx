@@ -124,7 +124,9 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
               </address>
               <p className="flex items-start gap-3 text-muted">
                 <Receipt size={16} strokeWidth={1.4} className="mt-0.5 shrink-0 text-gold" aria-hidden />
-                <span className="break-all">Razorpay {order.razorpay_payment_id ?? "—"} · {formatDate(order.created_at)}</span>
+                <span className="break-all">
+                  {order.payment_method === "cod" ? `Cash on delivery: collect ${formatINR(order.total)}` : `Razorpay ${order.razorpay_payment_id ?? "—"}`} · {formatDate(order.created_at)}
+                </span>
               </p>
             </div>
           </Card>

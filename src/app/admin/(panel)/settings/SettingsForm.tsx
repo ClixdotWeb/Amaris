@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { saveSettings } from "./actions";
 import { Field, FormSection } from "@/components/admin/ui";
+import { FormSwitch } from "@/components/admin/Switch";
 import { useActionToast } from "@/components/admin/Toaster";
 import type { ShopSettings } from "@/types";
 
@@ -44,8 +45,16 @@ export function SettingsForm({ settings: s }: { settings: ShopSettings }) {
         </Field>
       </FormSection>
 
-      <FormSection title="Payments">
-        <p className="text-sm text-muted">Cash on delivery is added in the Coupons &amp; COD phase.</p>
+      <FormSection title="Cash on delivery" description="Customers in India can choose to pay in cash when India Post delivers. Not offered for international orders.">
+        <FormSwitch name="cod_enabled" defaultChecked={s.cod_enabled} label="Offer cash on delivery" hint="Shown as a payment option on the payment page." />
+        <div className="grid gap-5 md:grid-cols-2">
+          <Field label="COD charge (₹)" htmlFor="cod_fee" hint="Added to the order when the customer picks cash on delivery. 0 = free.">
+            <input id="cod_fee" name="cod_fee" {...money} defaultValue={rupees(s.cod_fee ?? 0)} aria-describedby="cod_fee-hint" />
+          </Field>
+          <Field label="Only for orders up to (₹)" htmlFor="cod_max_order" hint="Leave empty for no limit.">
+            <input id="cod_max_order" name="cod_max_order" {...money} defaultValue={rupees(s.cod_max_order ?? null)} aria-describedby="cod_max_order-hint" />
+          </Field>
+        </div>
       </FormSection>
       </div>
 

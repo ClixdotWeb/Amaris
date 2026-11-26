@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { headerNav, isGroup } from "@/config/navigation";
-import { categoryPhoto } from "@/lib/data/mock";
+import { getShopNav } from "@/lib/data/nav";
 import { CartCount } from "@/components/cart/CartCount";
 import { getUser } from "@/lib/auth";
 import { USE_MOCK } from "@/lib/data/mode";
@@ -11,14 +10,6 @@ import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 import { NavLinks } from "./NavLinks";
 
-/** Thumbnails for the mega menu and drawer, keyed by category slug (product photos; see mock.ts CAT). */
-const navImages: Record<string, string | undefined> = Object.fromEntries(
-  headerNav
-    .filter(isGroup)
-    .flatMap((g) => g.children)
-    .map((c) => [c.slug, categoryPhoto(c.slug, 400)]),
-);
-
 const iconLink = "flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-150 hover:bg-cream hover:text-maroon";
 
 /**
@@ -26,7 +17,7 @@ const iconLink = "flex h-10 w-10 items-center justify-center rounded-full transi
  * Slims down on scroll (HeaderShell sets data-scrolled). The mega menu anchors to this header's bottom edge.
  */
 export async function Header() {
-  const user = await getUser();
+  const [user, { nav: headerNav, images: navImages }] = await Promise.all([getUser(), getShopNav()]);
 
   return (
     <HeaderShell>

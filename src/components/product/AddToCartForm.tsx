@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, Info } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { SizingPicker, isSizingComplete } from "./SizingPicker";
+import { saveBuyNow } from "@/components/checkout/useCheckoutItems";
+import type { SizeChartView } from "./SizeChart";
 import { DispatchNote } from "./DispatchNote";
 import { ColourPicker } from "./ColourPicker";
 import { useProductImage } from "./ProductView";
@@ -20,9 +22,20 @@ import type { ProductWithRelations, Sizing } from "@/types";
  *  custom_made       → standard size or measurements + quantity
  *  running_material  → length in metres
  */
-export function AddToCartForm({ product, stitchingCharge }: { product: ProductWithRelations; stitchingCharge: number }) {
+export function AddToCartForm({
+  product,
+  stitchingCharge,
+  sizeChart = null,
+}: {
+  product: ProductWithRelations;
+  stitchingCharge: number;
+  sizeChart?: SizeChartView | null;
+}) {
   const { add } = useCart();
   const router = useRouter();
+  const [going, setGoing] = useState(false);
+  // Load checkout in the background so Buy now opens it straight away
+  useEffect(() => router.prefetch("/checkout?buy=now"), [router]);
   const type = product.product_type;
 
   // Colour: starts on the colour in the first photo; picking a colour shows its photo, and
@@ -78,7 +91,7 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
     const err = validate();
     setError(err);
     if (err) return;
-    add({
+    const item = {
       productId: product.id,
       slug: product.slug,
       name: product.name,
@@ -93,8 +106,16 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
       stitchingCharge: stitching ? stitchingCharge : undefined,
       sizing: needsSizing ? (sizing ?? undefined) : undefined,
       dispatch,
-    });
-    router.push(goToCheckout ? "/checkout" : "/cart");
+    };
+    if (goToCheckout) {
+      // Buy now: check out this item on its own; the cart is not changed
+      saveBuyNow(item);
+      setGoing(true);
+      router.push("/checkout?buy=now");
+      return;
+    }
+    add(item);
+    router.push("/cart");
   }
 
   const stepper = (value: number, set: (n: number) => void, opts: { min: number; step: number; suffix?: string }) => (
@@ -171,7 +192,7 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
 
       {needsSizing && (
         <div className="space-y-3">
-          <SizingPicker sizes={customSizes} value={sizing} onChange={setSizing} showSizeChart={!isKids} />
+          <SizingPicker sizes={customSizes} value={sizing} onChange={setSizing} showSizeChart={!isKids} chart={sizeChart} />
           <p className="flex gap-2 bg-gold-light/40 p-3 text-xs text-ink">
             <Info size={15} className="mt-px shrink-0 text-gold" />
             {STITCHING_NOTE}
@@ -209,8 +230,8 @@ export function AddToCartForm({ product, stitchingCharge }: { product: ProductWi
           <button type="submit" disabled={outOfStock} className="btn-outline w-full">
             {outOfStock ? "Out of stock" : "Add to cart"}
           </button>
-          <button type="button" disabled={outOfStock} onClick={() => addToCart(true)} className="btn-primary w-full">
-            Buy now
+          <button type="button" disabled={outOfStock || going} onClick={() => addToCart(true)} className="btn-primary w-full">
+            {going ? "Opening checkout…" : "Buy now"}
           </button>
         </div>
         <a

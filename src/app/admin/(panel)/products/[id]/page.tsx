@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, ImageOff, RotateCcw } from "lucide-react";
+import { ArrowUpRight, ImageOff, RotateCcw, Plus } from "lucide-react";
 import { db } from "@/lib/db";
 import { Badge, Card, EmptyState, PageHeader, type BadgeTone } from "@/components/admin/ui";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
@@ -68,6 +68,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                 message="It disappears from the store and the product list. Past orders keep their link, and you can restore it from Products → Show: Deleted."
                 confirmLabel="Delete product"
               />
+              <Link href="/admin/products/new" className="btn-primary btn-sm">
+                <Plus size={15} strokeWidth={1.5} aria-hidden /> Add product
+              </Link>
             </>
           )
         }

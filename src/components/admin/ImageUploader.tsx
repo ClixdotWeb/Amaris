@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { ImagePlus, X } from "lucide-react";
 
 type Signature = {
   url: string;
@@ -22,6 +23,7 @@ export function ImageUploader({ maxFiles, onBusyChange }: { maxFiles: number; on
   const [files, setFiles] = useState<Uploaded[]>([]);
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [over, setOver] = useState(false);
 
   const track = (delta: number) => setBusy((n) => n + delta);
   useEffect(() => onBusyChange?.(busy > 0), [busy, onBusyChange]);
@@ -74,35 +76,74 @@ export function ImageUploader({ maxFiles, onBusyChange }: { maxFiles: number; on
   }
 
   const payload = files.map(({ public_id, version, signature, bytes, format }) => ({ public_id, version, signature, bytes, format }));
+  const full = files.length >= maxFiles;
 
   return (
     <div>
       <input type="hidden" name="uploaded_images" value={JSON.stringify(payload)} />
-      <input
-        type="file"
-        accept={TYPES.join(",")}
-        multiple
-        disabled={files.length >= maxFiles}
-        onChange={(e) => {
-          void onPick(e.target.files);
-          e.target.value = "";
+      {/* Drop zone: click "Add photos" or drag pictures onto it */}
+      <label
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!full) setOver(true);
         }}
-      />
-      {busy > 0 && <p role="status" className="mt-2 text-sm text-muted">Uploading {busy} photo{busy > 1 ? "s" : ""}…</p>}
-      {error && <p role="alert" className="mt-2 text-sm text-sale">{error}</p>}
-      {files.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-3">
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setOver(false);
+          if (!full) void onPick(e.dataTransfer.files);
+        }}
+        className={`flex flex-col items-center justify-center gap-3 rounded-[16px] border-2 border-dashed px-6 py-9 text-center transition-colors ${
+          full ? "cursor-not-allowed border-sand opacity-60" : over ? "cursor-copy border-maroon bg-maroon/[0.04]" : "cursor-pointer border-sand-strong/40 bg-cream/30 hover:border-maroon/60 hover:bg-cream/60"
+        }`}
+      >
+        <input
+          type="file"
+          accept={TYPES.join(",")}
+          multiple
+          disabled={full}
+          className="sr-only"
+          onChange={(e) => {
+            void onPick(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-maroon shadow-card">
+          <ImagePlus size={22} strokeWidth={1.4} />
+        </span>
+        <span className="btn-primary btn-sm pointer-events-none">{full ? `${maxFiles} photos added` : "Add photos"}</span>
+        <span className="text-xs text-muted">or drag them here · JPG, PNG, WebP or AVIF, up to 10 MB each</span>
+      </label>
+
+      {error && (
+        <p role="alert" className="mt-3 rounded-[10px] bg-sale/[0.06] px-3 py-2 text-sm text-sale">
+          {/api.?key/i.test(error) ? "Photo upload isn't set up: the Cloudinary key in .env.local is not valid. Ask your developer to add a new key." : error}
+        </p>
+      )}
+
+      {(files.length > 0 || busy > 0) && (
+        <ul className="mt-4 flex flex-wrap gap-3" aria-live="polite">
           {files.map((f) => (
-            <li key={f.public_id}>
-              <img src={f.preview} alt={f.name} width={100} className="aspect-[3/4] w-[100px] rounded-media bg-cream object-cover" />
-              <button type="button" className="mt-1 text-[11px] tracking-[0.14em] text-muted uppercase hover:text-sale" onClick={() => setFiles((cur) => cur.filter((x) => x.public_id !== f.public_id))}>
-                Don&apos;t add
+            <li key={f.public_id} className="group/ph relative">
+              <img src={f.preview} alt={f.name} width={100} className="aspect-[3/4] w-[100px] rounded-[10px] bg-cream object-cover" />
+              <button
+                type="button"
+                aria-label={`Don't add ${f.name}`}
+                className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-muted shadow-card transition-colors hover:text-sale"
+                onClick={() => setFiles((cur) => cur.filter((x) => x.public_id !== f.public_id))}
+              >
+                <X size={14} />
               </button>
+            </li>
+          ))}
+          {Array.from({ length: busy }, (_, i) => (
+            <li key={`up-${i}`} role="status" className="flex aspect-[3/4] w-[100px] animate-pulse items-center justify-center rounded-[10px] bg-cream text-[11px] text-muted">
+              Uploading…
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-2 text-xs text-muted">JPG, PNG, WebP or AVIF, up to 10 MB each. Photos are added to the product when you save.</p>
+      <p className="mt-3 text-xs text-muted">Photos are added to the product when you save.</p>
     </div>
   );
 }

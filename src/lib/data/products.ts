@@ -1,7 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Category, ProductWithRelations } from "@/types";
-import { USE_MOCK } from "./mode";
+import { USE_DASHBOARD_STORE, USE_MOCK } from "./mode";
+import { db } from "@/lib/db";
 import { mockCategories, mockProducts } from "./mock";
 
 function mockList(f: Filter) {
@@ -40,6 +41,8 @@ function warnDb(where: string, message: string) {
 
 type Filter = {
   categorySlug?: string;
+  /** Products in a dashboard collection (dashboard store only) */
+  collectionSlug?: string;
   query?: string;
   newArrivals?: boolean;
   hotDeals?: boolean;
@@ -50,6 +53,7 @@ type Filter = {
 };
 
 export async function listProducts(f: Filter = {}): Promise<{ products: ProductWithRelations[]; count: number }> {
+  if (USE_DASHBOARD_STORE) return db.shop.products(f);
   if (USE_MOCK) return mockList(f);
   const supabase = await createClient();
   let q = supabase
@@ -83,6 +87,7 @@ export async function listProducts(f: Filter = {}): Promise<{ products: ProductW
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductWithRelations | null> {
+  if (USE_DASHBOARD_STORE) return db.shop.productBySlug(slug);
   if (USE_MOCK) return mockProducts.find((p) => p.slug === slug) ?? null;
   const supabase = await createClient();
   const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
@@ -93,6 +98,7 @@ export async function getProductBySlug(slug: string): Promise<ProductWithRelatio
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  if (USE_DASHBOARD_STORE) return (await db.shop.categories()).find((c) => c.slug === slug) ?? null;
   if (USE_MOCK) return mockCategories.find((c) => c.slug === slug) ?? null;
   const supabase = await createClient();
   const { data } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
@@ -100,6 +106,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 }
 
 export async function listCategories(): Promise<Category[]> {
+  if (USE_DASHBOARD_STORE) return db.shop.categories();
   if (USE_MOCK) return mockCategories;
   const supabase = await createClient();
   const { data } = await supabase.from("categories").select("*").order("sort_order");
@@ -108,6 +115,7 @@ export async function listCategories(): Promise<Category[]> {
 
 /** Products by id, for server-side price recomputation at checkout. */
 export async function getProductsByIds(ids: string[]): Promise<ProductWithRelations[]> {
+  if (USE_DASHBOARD_STORE) return db.shop.productsByIds(ids);
   if (USE_MOCK) return mockProducts.filter((p) => ids.includes(p.id));
   const supabase = await createClient();
   const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).in("id", ids);
